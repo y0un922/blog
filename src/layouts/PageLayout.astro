@@ -1,0 +1,30 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+import Sidebar from "../components/Sidebar.astro";
+
+const {
+  title,
+  description,
+  currentPath,
+  categories,
+  siteStats,
+  eyebrow,
+  pageTitle,
+  lead
+} = Astro.props;
+---
+
+<BaseLayout title={title} description={description} currentPath={currentPath}>
+  <div class="editorial-grid">
+    <Sidebar categories={categories} siteStats={siteStats} />
+
+    <section class="space-y-8">
+      <header class="panel ghost-outline rounded-xl px-5 py-6 md:px-7 md:py-7">
+        <p class="section-eyebrow">{eyebrow}</p>
+        <h1 class="section-title mt-4">{pageTitle}</h1>
+        {lead && <p class="mt-4 max-w-2xl text-sm text-[var(--fg-muted)] md:text-base">{lead}</p>}
+      </header>
+      <slot />
+    </section>
+  </div>
+</BaseLayout>

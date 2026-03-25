@@ -1,0 +1,9 @@
+---
+import { getTagUrl } from "../utils/posts";
+
+const { tag } = Astro.props;
+---
+
+<a class="tag-chip" href={getTagUrl(tag)}>
+  {tag}
+</a>

@@ -1,0 +1,37 @@
+---
+import PageLayout from "../../layouts/PageLayout.astro";
+import PostCard from "../../components/PostCard.astro";
+import { getPublishedPosts, getPostsForTag, getSiteStats, groupByCategory, groupByTag, withBase } from "../../utils/posts";
+
+export async function getStaticPaths() {
+  const posts = await getPublishedPosts();
+  const tags = groupByTag(posts);
+
+  return tags.map((tag) => ({
+    params: { tag: tag.slug },
+    props: { label: tag.label }
+  }));
+}
+
+const posts = await getPublishedPosts();
+const categories = groupByCategory(posts);
+const siteStats = getSiteStats(posts);
+const tag = Astro.params.tag ?? "";
+const { label = tag } = Astro.props;
+const filteredPosts = getPostsForTag(posts, tag);
+---
+
+<PageLayout
+  title={`${label} | y0un92`}
+  description={`Posts tagged with ${label}.`}
+  currentPath={withBase(`/tags/${tag}/`)}
+  categories={categories}
+  siteStats={siteStats}
+  eyebrow={`05 // TAG_${tag.toUpperCase()}`}
+  pageTitle="Tag filter"
+  lead={`Published entries tagged with ${label}.`}
+>
+  <section class="space-y-5">
+    {filteredPosts.map((post, index) => <PostCard post={post} index={index + 1} />)}
+  </section>
+</PageLayout>

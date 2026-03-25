@@ -1,0 +1,21 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { withBase } from "../utils/posts";
+---
+
+<BaseLayout
+  title="404 // Command not found"
+  description="The requested page could not be resolved."
+  currentPath={withBase("/404/")}
+>
+  <section class="mx-auto mt-16 max-w-3xl panel ghost-outline rounded-xl px-6 py-8 md:px-10 md:py-12">
+    <p class="section-eyebrow">ERR // COMMAND_NOT_FOUND</p>
+    <h1 class="mt-4 text-4xl font-semibold tracking-[-0.05em] md:text-5xl">404</h1>
+    <p class="mt-5 max-w-2xl text-sm text-[var(--fg-muted)] md:text-base">
+      The requested route is missing from the current archive map. Return to the root shell and continue from there.
+    </p>
+    <div class="mt-8">
+      <a class="terminal-button primary" href={withBase("/")}>Return to HOME</a>
+    </div>
+  </section>
+</BaseLayout>

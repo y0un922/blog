@@ -1,0 +1,35 @@
+---
+import PageLayout from "../../layouts/PageLayout.astro";
+import PostCard from "../../components/PostCard.astro";
+import { getPublishedPosts, getPostsForCategory, getSiteStats, groupByCategory, withBase } from "../../utils/posts";
+
+export async function getStaticPaths() {
+  const posts = await getPublishedPosts();
+  const categories = groupByCategory(posts);
+
+  return categories.map((category) => ({
+    params: { category: category.slug }
+  }));
+}
+
+const posts = await getPublishedPosts();
+const categories = groupByCategory(posts);
+const siteStats = getSiteStats(posts);
+const category = Astro.params.category ?? "";
+const filteredPosts = getPostsForCategory(posts, category);
+---
+
+<PageLayout
+  title={`${category} | y0un92`}
+  description={`Posts filed under ${category}.`}
+  currentPath={withBase(`/categories/${category}/`)}
+  categories={categories}
+  siteStats={siteStats}
+  eyebrow={`04 // ${category}`}
+  pageTitle="Category feed"
+  lead={`Published entries filed under ${category}.`}
+>
+  <section class="space-y-5">
+    {filteredPosts.map((post, index) => <PostCard post={post} index={index + 1} />)}
+  </section>
+</PageLayout>

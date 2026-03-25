@@ -1,0 +1,96 @@
+---
+import Footer from "../components/Footer.astro";
+import Navbar from "../components/Navbar.astro";
+import SearchModal from "../components/SearchModal.astro";
+
+import "../styles/global.css";
+
+const {
+  title = "y0un92 // Terminal Editorial",
+  description = "A terminal editorial blog built with Astro.",
+  currentPath = "/",
+  structuredData = null
+} = Astro.props;
+
+const canonical = Astro.site ? new URL(currentPath, Astro.site).toString() : undefined;
+const assetBase = import.meta.env.BASE_URL.endsWith("/")
+  ? import.meta.env.BASE_URL
+  : `${import.meta.env.BASE_URL}/`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="generator" content={Astro.generator} />
+    {canonical && <link rel="canonical" href={canonical} />}
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {canonical && <meta property="og:url" content={canonical} />}
+    <link rel="icon" href={`${assetBase}favicon.svg`} type="image/svg+xml" />
+    {
+      structuredData && (
+        <script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />
+      )
+    }
+    <script is:inline>
+      const storedTheme = localStorage.getItem("theme");
+      const preferredDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const shouldUseLight = storedTheme === "light" || (!storedTheme && !preferredDark);
+      document.documentElement.classList.toggle("light", shouldUseLight);
+    </script>
+  </head>
+  <body class="screen-shell">
+    <Navbar currentPath={currentPath} />
+    <main class="site-frame">
+      <slot />
+      <Footer />
+    </main>
+    <SearchModal />
+    <button
+      class="terminal-button primary fixed bottom-6 right-6 z-30 hidden shadow-[var(--shadow-ambient)]"
+      type="button"
+      data-back-to-top
+    >
+      ↑ Top
+    </button>
+    <script>
+      const root = document.documentElement;
+      const themeToggleButtons = [...document.querySelectorAll("[data-theme-toggle]")];
+      const backToTopButton = document.querySelector("[data-back-to-top]");
+      const menuToggle = document.querySelector("[data-menu-toggle]");
+      const menuPanel = document.querySelector("[data-menu-panel]");
+
+      const applyTheme = (theme: "dark" | "light") => {
+        root.classList.toggle("light", theme === "light");
+        localStorage.setItem("theme", theme);
+      };
+
+      themeToggleButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          applyTheme(root.classList.contains("light") ? "dark" : "light");
+        });
+      });
+
+      menuToggle?.addEventListener("click", () => {
+        menuPanel?.classList.toggle("hidden");
+      });
+
+      window.addEventListener("scroll", () => {
+        if (!backToTopButton) {
+          return;
+        }
+
+        backToTopButton.classList.toggle("hidden", window.scrollY < 480);
+      });
+
+      backToTopButton?.addEventListener("click", () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    </script>
+  </body>
+</html>
