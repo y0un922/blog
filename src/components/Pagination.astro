@@ -1,0 +1,35 @@
+---
+import { getPageUrl } from "../utils/posts";
+
+const { currentPage, totalPages } = Astro.props;
+
+const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1);
+---
+
+{
+  totalPages > 1 && (
+    <nav class="panel ghost-outline mt-8 flex flex-wrap items-center gap-3 rounded-lg px-4 py-4">
+      <a
+        class="terminal-button"
+        href={currentPage > 1 ? getPageUrl(currentPage - 1) : "#"}
+        aria-disabled={currentPage === 1}
+      >
+        ← Prev
+      </a>
+      <div class="flex flex-wrap gap-2">
+        {pageNumbers.map((page) => (
+          <a class="terminal-button" href={getPageUrl(page)} data-active={page === currentPage}>
+            {String(page).padStart(2, "0")}
+          </a>
+        ))}
+      </div>
+      <a
+        class="terminal-button"
+        href={currentPage < totalPages ? getPageUrl(currentPage + 1) : "#"}
+        aria-disabled={currentPage === totalPages}
+      >
+        Next →
+      </a>
+    </nav>
+  )
+}

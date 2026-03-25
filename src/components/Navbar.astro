@@ -1,0 +1,62 @@
+---
+import ThemeToggle from "./ThemeToggle.astro";
+import { withBase } from "../utils/posts";
+
+const { currentPath = "/" } = Astro.props;
+const basePrefix = import.meta.env.BASE_URL.endsWith("/")
+  ? import.meta.env.BASE_URL.slice(0, -1)
+  : import.meta.env.BASE_URL;
+const normalizedPath = currentPath.startsWith(basePrefix)
+  ? currentPath.slice(basePrefix.length) || "/"
+  : currentPath;
+const links = [
+  { href: withBase("/"), label: "HOME", active: normalizedPath === "/" || normalizedPath.startsWith("/page/") },
+  { href: withBase("/"), label: "POSTS", active: normalizedPath.startsWith("/posts/") },
+  { href: withBase("/about/"), label: "ABOUT", active: normalizedPath.startsWith("/about/") }
+];
+---
+
+<header class="fixed inset-x-0 top-0 z-40 border-b-0">
+  <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 md:px-8 lg:px-10">
+    <div class="panel ghost-outline flex w-full items-center justify-between gap-4 rounded-lg px-4 py-3">
+      <a href={withBase("/")} class="flex items-center gap-3">
+        <span class="terminal-copy text-[var(--color-cat-green)]">user@blog:~$</span>
+        <span class="font-mono text-sm tracking-[0.16em] text-[var(--fg-default)]">y0un92</span>
+      </a>
+
+      <nav class="hidden items-center gap-2 lg:flex">
+        {links.map((link) => (
+          <a class="nav-link" href={link.href} data-active={link.active}>
+            {link.label}
+          </a>
+        ))}
+      </nav>
+
+      <div class="flex items-center gap-2">
+        <button class="terminal-button hidden sm:inline-flex" type="button" data-search-open>
+          <span aria-hidden="true">⌕</span>
+          <span>Search</span>
+        </button>
+        <ThemeToggle />
+        <button class="terminal-button lg:hidden" type="button" data-menu-toggle aria-label="Toggle menu">
+          <span aria-hidden="true">≡</span>
+          <span>Menu</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="hidden px-4 md:px-8 lg:px-10" data-menu-panel>
+    <div class="panel ghost-outline mx-auto flex max-w-7xl flex-col gap-2 rounded-lg px-4 py-4 lg:hidden">
+      {links.map((link) => (
+        <a class="nav-link" href={link.href} data-active={link.active}>
+          {link.label}
+        </a>
+      ))}
+      <button class="terminal-button justify-center sm:hidden" type="button" data-search-open>
+        <span aria-hidden="true">⌕</span>
+        <span>Search</span>
+      </button>
+    </div>
+  </div>
+</header>

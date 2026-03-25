@@ -1,0 +1,31 @@
+---
+import TagBadge from "./TagBadge.astro";
+import { formatDate, getPostUrl, type PostEntry } from "../utils/posts";
+
+const { post, index } = Astro.props as { post: PostEntry; index: number };
+---
+
+<article class="story-card">
+  <a class="space-y-4" href={getPostUrl(post)}>
+    <div class="flex items-center gap-3">
+      <span class="section-eyebrow text-[var(--color-tertiary)]">
+        {String(index).padStart(2, "0")}
+      </span>
+      <span class="terminal-copy">{formatDate(post.data.date)}</span>
+    </div>
+
+    <div class="space-y-3">
+      <h3 class="text-2xl font-semibold tracking-[-0.03em] text-[var(--color-cat-blue)] transition hover:underline">
+        {post.data.title}
+      </h3>
+      <p class="max-w-2xl text-sm text-[var(--fg-muted)] md:text-base">
+        {post.data.description}
+      </p>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2">
+      <span class="terminal-copy">{post.data.category}</span>
+      {post.data.tags.map((tag: string) => <TagBadge tag={tag} />)}
+    </div>
+  </a>
+</article>
