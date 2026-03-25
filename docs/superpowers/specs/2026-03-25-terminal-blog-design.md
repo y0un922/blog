@@ -53,6 +53,8 @@ blog/
 │   │   ├── tags/
 │   │   │   └── [tag].astro     # Posts by tag
 │   │   ├── about.astro         # About page
+│   │   ├── 404.astro           # Terminal-style 404 page
+│   │   ├── search-index.json.ts # Search index static endpoint
 │   │   └── rss.xml.ts          # RSS feed
 │   ├── styles/
 │   │   └── global.css          # Tailwind entry + custom styles
@@ -63,7 +65,6 @@ blog/
 │   └── favicon.svg
 ├── prototype/                  # Original prototype reference
 ├── astro.config.mjs
-├── tailwind.config.mjs
 ├── tsconfig.json
 └── package.json
 ```
@@ -104,6 +105,7 @@ Write .md in src/content/posts/ → git push → GitHub Actions build → Deploy
 | Category filter | `/categories/[category]` | Posts filtered by category |
 | Tag filter | `/tags/[tag]` | Posts filtered by tag |
 | About | `/about` | Personal intro, terminal style |
+| 404 | `*` | Terminal-style "command not found" error page |
 | RSS | `/rss.xml` | Standard RSS 2.0 feed |
 
 ### Home Page Layout
@@ -157,7 +159,7 @@ Write .md in src/content/posts/ → git push → GitHub Actions build → Deploy
 ```
 
 - TOC: right-side sticky on scroll
-- Code blocks: Shiki with Catppuccin Mocha theme (Astro built-in)
+- Code blocks: Shiki dual theme — `catppuccin-mocha` (dark) / `catppuccin-latte` (light), configured in `astro.config.mjs` via `markdown.shikiConfig.themes`
 - Mobile: TOC collapses above article content
 
 ## 4. Style System
@@ -194,8 +196,9 @@ Write .md in src/content/posts/ → git push → GitHub Actions build → Deploy
 | Brand / nav / labels | **JetBrains Mono** | Monospace for all "system-level" text |
 | Headings / body | **Space Grotesk** | Technical-humanist, high readability |
 | Code blocks | **JetBrains Mono** | Natural choice |
+| CJK body text | System CJK fallback | `"LXGW WenKai", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif` |
 
-Fonts self-hosted in `public/fonts/` to avoid external requests.
+Fonts self-hosted in `public/fonts/` (Latin fonts only). CJK fonts use system fallback stack to avoid large font downloads (~10MB+). The fallback chain ensures consistent rendering across macOS, Linux, and Windows.
 
 ### Design Rules (from prototype DESIGN.md)
 
@@ -203,7 +206,9 @@ Fonts self-hosted in `public/fonts/` to avoid external requests.
 - **No-Pill Rule**: Buttons/tags use `0.125rem` border-radius, never full rounded
 - **Left-aligned**: Content left-aligned, never centered
 - **Ghost Border**: When boundaries needed, use `outline-variant` at 30% opacity
-- **Glassmorphism**: Search modal and overlays use 70% opacity + 24px blur
+- **Glassmorphism**: Search modal and overlays use 70% opacity + 24px blur. In light mode, use `surface-container` at 85% opacity (higher than dark mode to maintain readability on light backgrounds)
+- **Border Radius Scale**: `DEFAULT: 0.125rem`, `lg: 0.25rem`, `xl: 0.5rem`, `full: 0.75rem` (intentionally redefined from Tailwind's 9999px to maintain terminal aesthetic)
+- **Signature Glow**: Primary action buttons use gradient from `primary` to `primary-container` at 135deg
 
 ## 5. Interactive Features
 
@@ -215,16 +220,36 @@ Fonts self-hosted in `public/fonts/` to avoid external requests.
 | Back to top | FAB button from prototype, vanilla JS scroll |
 | Mobile menu | Hamburger menu, vanilla JS toggle |
 
-### Search Flow
+### Search Implementation
 
-```
-Build time: Astro generates /search-index.json (title/description/tags/category/slug)
-Runtime: User triggers search → lazy-load Fuse.js + index → client-side fuzzy match
+**Index generation**: Astro static endpoint at `src/pages/search-index.json.ts` generates the index at build time.
+
+**Index schema**:
+```json
+[
+  {
+    "title": "Article Title",
+    "description": "Short description",
+    "category": "ENGINEERING_NOTES",
+    "tags": ["UI/UX", "CYBERPUNK"],
+    "slug": "my-first-post",
+    "date": "2024-05-20"
+  }
+]
 ```
 
-- Glass-style modal overlay
-- Real-time result display
-- Click result to navigate to post
+**Note on CJK search**: Fuse.js has no built-in CJK tokenizer. Index only `title` + `tags` + `category` (not full body) to keep fuzzy matching quality acceptable for Chinese text. Full-text search is out of scope for v1.
+
+**Search flow**:
+```
+User clicks search box or presses Ctrl+K / Cmd+K
+→ Lazy-load Fuse.js + /search-index.json (base-path aware)
+→ Client-side fuzzy match
+→ Display results in Glass-style modal overlay
+→ Click result navigates to post, Escape closes modal
+```
+
+**Keyboard**: `Escape` closes modal, arrow keys navigate results, `Enter` opens selected result.
 
 ## 6. SEO
 
@@ -258,6 +283,14 @@ steps:
 - `astro.config.mjs`: `site: 'https://y0un92.github.io'`, `base: '/blog'`
 - Optional custom domain via `public/CNAME`
 
+### URL Strategy (base path)
+
+Setting `base: '/blog'` means all internal links and asset paths must be base-aware:
+- Internal links: use Astro's `import.meta.env.BASE_URL` prefix
+- RSS / OG / canonical URLs: use full `site + base` path
+- Search index fetch: load from `${import.meta.env.BASE_URL}search-index.json`
+- Static assets in `public/`: automatically served under base path by Astro
+
 ## 8. Dependencies
 
 ```json
@@ -269,11 +302,53 @@ steps:
     "fuse.js": "^7.x"
   },
   "devDependencies": {
-    "@astrojs/tailwind": "^6.x",
+    "@tailwindcss/vite": "^4.x",
     "tailwindcss": "^4.x",
     "sharp": "^0.33.x"
   }
 }
 ```
 
-Zero framework runtime. Minimal dependency footprint.
+**Note**: Tailwind v4 uses `@tailwindcss/vite` as Vite plugin (not the deprecated `@astrojs/tailwind`). There is no `tailwind.config.mjs` — all theme tokens are defined in `src/styles/global.css` via `@theme` directives.
+
+Zero framework runtime. Client-side JS budget: Fuse.js (~25KB gzipped) + search index, lazy-loaded on search trigger only.
+
+## 9. Icons
+
+Inline SVGs for all icons (search, terminal, dark_mode, expand_less, folder_open, settings_input_component). No icon font or CDN dependency. Icons extracted from Material Symbols and embedded directly in components.
+
+## 10. Images
+
+- Post cover images stored in `src/content/posts/covers/` (co-located with posts)
+- Use Astro's `<Image>` component for automatic optimization via sharp
+- Allowed formats: jpg, png, webp, avif
+- Lazy loading via native `loading="lazy"` attribute
+- When no cover is provided: post card renders without image column (text-only layout variant)
+
+## 11. Responsive Breakpoints
+
+Use Tailwind default breakpoints:
+- `sm`: 640px
+- `md`: 768px
+- `lg`: 1024px (sidebar/content split point)
+- `xl`: 1280px
+
+### Mobile behavior:
+- `< lg`: Sidebar collapses below post list; hamburger menu for navigation
+- `< md`: Post cards switch to single-column (no cover image column)
+- TOC on post pages: collapses into expandable section above article on mobile
+- Hamburger menu: slides in from top, full-width overlay panel with navigation links
+
+## 12. Prototype Divergences
+
+Elements from the prototype intentionally dropped:
+- `CONTACT` nav item — not needed for v1
+- `[ZH]/[EN]` language switcher — i18n not in scope
+- External CDN images — replaced with self-hosted covers
+
+## 13. Category & Tag Slug Rules
+
+- Category slugs: UPPER_SNAKE_CASE (e.g., `ENGINEERING_NOTES`), used directly as URL segments
+- Tag slugs: lowercase, hyphen-separated (e.g., `ui-ux`)
+- Both must be ASCII-only for URL safety
+- Display names can differ from slugs (defined in a mapping if needed)
