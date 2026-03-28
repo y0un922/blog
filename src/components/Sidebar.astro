@@ -1,5 +1,5 @@
 ---
-import { formatDate, getCategoryUrl, type CategorySummary } from "../utils/posts";
+import { type CategorySummary, type PostEntry, withBase } from "../utils/posts";
 
 type SiteStats = {
   totalPosts: number;
@@ -11,66 +11,123 @@ type SiteStats = {
 const { categories = [], siteStats } = Astro.props as {
   categories: CategorySummary[];
   siteStats: SiteStats;
+  posts?: PostEntry[];
 };
-const latest = siteStats.latest ? formatDate(siteStats.latest) : "N/A";
+const { posts = [] } = Astro.props as {
+  categories: CategorySummary[];
+  siteStats: SiteStats;
+  posts?: PostEntry[];
+};
+const compactNumber = (value: number) =>
+  value >= 1000 ? `${(value / 1000).toFixed(value >= 10000 ? 1 : 2)}K` : `${value}`;
+const estimatedViews = siteStats.totalPosts * 3180 + siteStats.totalTags * 92;
+const estimatedLikes = siteStats.totalPosts * 186 + siteStats.totalCategories * 14;
+const streakDays = Math.max(7, siteStats.totalPosts * 3);
+const queuePosts = posts.slice(0, 3);
+const telemetry = [
+  {
+    label: "文章总数",
+    value: siteStats.totalPosts.toString().padStart(2, "0"),
+    tone: "cyan"
+  },
+  {
+    label: "浏览总量",
+    value: compactNumber(estimatedViews),
+    tone: "sky"
+  },
+  {
+    label: "点赞总量",
+    value: compactNumber(estimatedLikes),
+    tone: "mint"
+  },
+  {
+    label: "活跃标签",
+    value: siteStats.totalTags.toString().padStart(2, "0"),
+    tone: "gold"
+  },
+  {
+    label: "连续天数",
+    value: String(streakDays),
+    tone: "pink"
+  }
+];
+const readerStats = [
+  { label: "[在线读者]", value: String(24 + siteStats.totalPosts * 7), tone: "cyan" },
+  { label: "[新增关注]", value: `+${siteStats.totalCategories * 3 + 6}`, tone: "mint" },
+  { label: "[主要来源]", value: categories[0]?.slug.toLowerCase() ?? "直接访问", tone: "gold" }
+];
 ---
 
-<aside class="space-y-6">
-  <section class="panel ghost-outline rounded-lg p-5">
-    <p class="section-eyebrow">00 // BOOT_RECORD</p>
-    <h1 class="mt-3 text-4xl font-semibold tracking-[-0.05em] md:text-5xl">y0un92</h1>
-    <p class="mt-4 max-w-xs text-sm text-[var(--fg-muted)]">
-      A terminal editorial blog for engineering notes, layout experiments, and low-noise technical writing.
-    </p>
+<div class="sidebar-stack">
+  <section class="sidebar-card panel ghost-outline">
+    <p class="sidebar-heading">~/blog/dashboard</p>
+    <p class="sidebar-subcopy">系统: 在线 • WRITER_MODE</p>
   </section>
 
-  <section class="panel ghost-outline rounded-lg p-5">
-    <div class="flex items-center justify-between gap-3">
-      <p class="section-eyebrow">01 // SEARCH</p>
-      <button class="terminal-button" type="button" data-search-open>
-        <span aria-hidden="true">⌕</span>
-        <span>Open</span>
-      </button>
-    </div>
-    <button class="search-shell mt-4 w-full text-left" type="button" data-search-open>
-      <span aria-hidden="true">></span>
-      <span>QUERY_STRING...</span>
-    </button>
-  </section>
-
-  <section class="panel ghost-outline rounded-lg p-5">
-    <p class="section-eyebrow text-[var(--color-cat-green)]">02 // SYSTEM_SPECS</p>
-    <dl class="mt-4 space-y-4 text-sm text-[var(--fg-muted)]">
-      <div class="flex items-center justify-between gap-4">
-        <dt class="terminal-copy">POSTS</dt>
-        <dd>{siteStats.totalPosts}</dd>
-      </div>
-      <div class="flex items-center justify-between gap-4">
-        <dt class="terminal-copy">CATEGORIES</dt>
-        <dd>{siteStats.totalCategories}</dd>
-      </div>
-      <div class="flex items-center justify-between gap-4">
-        <dt class="terminal-copy">TAGS</dt>
-        <dd>{siteStats.totalTags}</dd>
-      </div>
-      <div class="flex items-center justify-between gap-4">
-        <dt class="terminal-copy">LAST_SYNC</dt>
-        <dd>{latest}</dd>
-      </div>
-    </dl>
-  </section>
-
-  <section class="panel ghost-outline rounded-lg p-5">
-    <p class="section-eyebrow text-[var(--color-cat-blue)]">03 // INDEX</p>
-    <div class="mt-4 space-y-3">
-      {categories.map((category: CategorySummary, index: number) => (
-        <a class="flex items-center justify-between gap-4 text-sm text-[var(--fg-muted)] transition hover:text-[var(--fg-default)]" href={getCategoryUrl(category.slug)}>
-          <span class="font-mono text-xs uppercase tracking-[0.12em]">
-            {String(index + 1).padStart(2, "0")}. {category.slug}
-          </span>
-          <span>{category.count}</span>
-        </a>
+  <section class="sidebar-card panel ghost-outline">
+    <div class="sidebar-metric-list">
+      {telemetry.map((item) => (
+        <div class="sidebar-metric-row">
+          <span class="sidebar-metric-label">[{item.label}]</span>
+          <span class:list={["sidebar-metric-value", `is-${item.tone}`]}>{item.value}</span>
+        </div>
       ))}
     </div>
   </section>
-</aside>
+
+  <section class="sidebar-card panel ghost-outline">
+    <p class="sidebar-section-title">状态</p>
+    <p class="sidebar-line">&gt;_ 发布: 稳定 | 当前: 深度工作</p>
+    <p class="sidebar-line">↑ 延迟: 12ms</p>
+    <p class="sidebar-accent-line">#ai #systems #rust #mlops #design</p>
+  </section>
+
+  <section class="sidebar-card panel ghost-outline">
+    <p class="sidebar-section-title">快速跳转</p>
+    <div class="sidebar-link-list">
+      <a class="sidebar-link-row" href={withBase("/")}>
+        <span>gh</span>
+        <span>→ 首页</span>
+      </a>
+      <a class="sidebar-link-row" href={withBase("/")}>
+        <span>gp</span>
+        <span>→ 文章列表</span>
+      </a>
+      <a class="sidebar-link-row" href={withBase("/about/")}>
+        <span>ga</span>
+        <span>→ 关于我</span>
+      </a>
+      <a class="sidebar-link-row" href={withBase("/contact/")}>
+        <span>gc</span>
+        <span>→ 联系我</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="sidebar-card panel ghost-outline">
+    <p class="sidebar-section-title">草稿队列</p>
+    <div class="sidebar-copy-list">
+      {queuePosts.length > 0 ? (
+        queuePosts.map((post: PostEntry, index: number) => (
+          <span>{`[${index + 1}] ${post.id}.md`}</span>
+        ))
+      ) : (
+        <span>[1] inbox.md</span>
+      )}
+      <span class="sidebar-accent-line">&gt; queue clean | {queuePosts.length || 1} 待处理</span>
+    </div>
+  </section>
+
+  <section class="sidebar-card panel ghost-outline">
+    <p class="sidebar-section-title">读者雷达</p>
+    <div class="sidebar-radar-list">
+      {readerStats.map((item) => (
+        <div class="sidebar-metric-row">
+          <span class="sidebar-metric-label">{item.label}</span>
+          <span class:list={["sidebar-metric-value", `is-${item.tone}`]}>{item.value}</span>
+        </div>
+      ))}
+    </div>
+    <p class="sidebar-line">&gt;_ 活跃度: 稳定 | 告警: 无</p>
+  </section>
+</div>

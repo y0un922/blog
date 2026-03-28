@@ -2,13 +2,18 @@
 import { withBase } from "../utils/posts";
 ---
 
-<footer class="mt-10">
-  <div class="panel ghost-outline flex flex-col gap-3 rounded-lg px-4 py-4 font-mono text-[0.72rem] uppercase tracking-[0.12em] text-[var(--fg-muted)] md:flex-row md:items-center md:justify-between">
-    <p>SYS_REF: MAIN_BRANCH // STATIC_OUTPUT // GITHUB_PAGES</p>
-    <div class="flex flex-wrap items-center gap-4">
-      <button type="button" data-search-open class="hover:text-[var(--fg-default)]">[S] Search</button>
-      <a href={withBase("/")} class="hover:text-[var(--fg-default)]">[H] Home</a>
-      <a href="https://github.com/y0un92" target="_blank" rel="noreferrer" class="hover:text-[var(--fg-default)]">[G] GitHub</a>
+<footer class="site-footer-wrapper">
+  <div class="site-footer panel ghost-outline">
+    <div class="footer-copy">
+      <span>模式: NORMAL // 构建: STATIC // 搜索: READY</span>
+      <span>归档链接稳定 · RSS 在线 · 主题同步已启用</span>
+    </div>
+    <div class="footer-actions">
+      <button type="button" data-search-open class="footer-link">/ 搜索</button>
+      <button type="button" data-shortcuts-open class="footer-link">? 快捷键</button>
+      <a href={withBase("/")} class="footer-link">g h 首页</a>
+      <a href={withBase("/contact/")} class="footer-link">g c 联系</a>
+      <a href="https://github.com/y0un92" target="_blank" rel="noreferrer" class="footer-link">↗ GITHUB</a>
     </div>
   </div>
 </footer>

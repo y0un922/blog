@@ -19,6 +19,11 @@ const siteStats = getSiteStats(posts);
 const tag = Astro.params.tag ?? "";
 const { label = tag } = Astro.props;
 const filteredPosts = getPostsForTag(posts, tag);
+const chips = [
+  { label: "全部", href: withBase("/") },
+  { label, active: true },
+  { label: "标签" }
+];
 ---
 
 <PageLayout
@@ -26,12 +31,13 @@ const filteredPosts = getPostsForTag(posts, tag);
   description={`Posts tagged with ${label}.`}
   currentPath={withBase(`/tags/${tag}/`)}
   categories={categories}
+  posts={posts}
   siteStats={siteStats}
-  eyebrow={`05 // TAG_${tag.toUpperCase()}`}
-  pageTitle="Tag filter"
-  lead={`Published entries tagged with ${label}.`}
+  variant="archive"
+  toolbarLabel={`筛选: 标签 ${label.toLowerCase()}`}
+  chips={chips}
 >
-  <section class="space-y-5">
-    {filteredPosts.map((post, index) => <PostCard post={post} index={index + 1} />)}
+  <section class="archive-list">
+    {filteredPosts.map((post, index) => <PostCard post={post} index={index + 1} variant="archive" />)}
   </section>
 </PageLayout>

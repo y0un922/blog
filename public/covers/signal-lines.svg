@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-labelledby="title desc">
+  <title id="title">Signal lines cover</title>
+  <desc id="desc">Diagonal signal lines across a dark terminal-style background.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#0f1020"/>
+      <stop offset="100%" stop-color="#060711"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="320" fill="url(#bg)"/>
+  <g transform="rotate(-18 160 160)">
+    <rect x="54" y="42" width="220" height="236" fill="#0a0b16"/>
+    <g stroke-width="2" fill="none">
+      <path d="M70 72h188" stroke="#e3e0f7" stroke-opacity=".08"/>
+      <path d="M70 92h188" stroke="#e3e0f7" stroke-opacity=".18"/>
+      <path d="M70 112h188" stroke="#e3e0f7" stroke-opacity=".1"/>
+      <path d="M70 132h188" stroke="#89b4fa" stroke-opacity=".14"/>
+      <path d="M70 152h188" stroke="#e3e0f7" stroke-opacity=".24"/>
+      <path d="M70 172h188" stroke="#e3e0f7" stroke-opacity=".12"/>
+      <path d="M70 192h188" stroke="#cba6f7" stroke-opacity=".22"/>
+      <path d="M70 212h188" stroke="#e3e0f7" stroke-opacity=".16"/>
+      <path d="M70 232h188" stroke="#e3e0f7" stroke-opacity=".08"/>
+    </g>
+  </g>
+  <path d="M36 246c46-34 104-56 170-70" stroke="#89b4fa" stroke-opacity=".2" stroke-width="2" fill="none"/>
+  <path d="M78 286c52-18 110-26 170-18" stroke="#cba6f7" stroke-opacity=".16" stroke-width="2" fill="none"/>
+</svg>

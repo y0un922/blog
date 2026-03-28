@@ -2,3 +2,8 @@ node_modules/
 dist/
 .astro/
 .DS_Store
+
+.ace-tool
+docs/
+*.pen
+prototype

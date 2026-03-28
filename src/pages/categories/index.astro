@@ -5,6 +5,11 @@ import { getPublishedPosts, getSiteStats, groupByCategory, getCategoryUrl, withB
 const posts = await getPublishedPosts();
 const categories = groupByCategory(posts);
 const siteStats = getSiteStats(posts);
+const chips = [
+  { label: "全部", href: withBase("/") },
+  { label: "分类", active: true },
+  { label: "最近" }
+];
 ---
 
 <PageLayout
@@ -12,16 +17,18 @@ const siteStats = getSiteStats(posts);
   description="Browse all archive categories."
   currentPath={withBase("/categories/")}
   categories={categories}
+  posts={posts}
   siteStats={siteStats}
-  eyebrow="04 // CATEGORY_INDEX"
-  pageTitle="Folder overview"
-  lead="All archive folders generated from the published post taxonomy."
+  variant="archive"
+  toolbarLabel="筛选: 分类"
+  chips={chips}
 >
-  <section class="grid gap-4 md:grid-cols-2">
+  <section class="archive-list">
     {categories.map((category, index) => (
-      <a class="story-card" href={getCategoryUrl(category.slug)}>
-        <p class="section-eyebrow">{String(index + 1).padStart(2, "0")} // {category.slug}</p>
-        <p class="mt-4 text-lg font-semibold tracking-[-0.03em]">{category.count} published entries</p>
+      <a class="taxonomy-entry panel ghost-outline" href={getCategoryUrl(category.slug)}>
+        <p class="taxonomy-entry__meta">{String(index + 1).padStart(2, "0")} · 分类节点</p>
+        <h2 class="taxonomy-entry__title">{category.slug}</h2>
+        <p class="taxonomy-entry__summary">{category.count} 篇已发布文章。</p>
       </a>
     ))}
   </section>

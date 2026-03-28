@@ -2,7 +2,7 @@
 import PageLayout from "../../layouts/PageLayout.astro";
 import Pagination from "../../components/Pagination.astro";
 import PostCard from "../../components/PostCard.astro";
-import { getPublishedPosts, getSiteStats, groupByCategory, paginatePosts, withBase } from "../../utils/posts";
+import { getPublishedPosts, getSiteStats, groupByCategory, groupByTag, paginatePosts, withBase } from "../../utils/posts";
 
 export async function getStaticPaths() {
   const posts = await getPublishedPosts();
@@ -15,6 +15,7 @@ export async function getStaticPaths() {
 
 const posts = await getPublishedPosts();
 const categories = groupByCategory(posts);
+const tags = groupByTag(posts);
 const siteStats = getSiteStats(posts);
 const page = Number(Astro.params.page ?? "1");
 const { items, currentPage, totalPages } = paginatePosts(posts, page);
@@ -25,13 +26,15 @@ const { items, currentPage, totalPages } = paginatePosts(posts, page);
   description={`Archive page ${currentPage} of the terminal editorial blog.`}
   currentPath={withBase(`/page/${currentPage}/`)}
   categories={categories}
+  posts={posts}
+  tags={tags}
   siteStats={siteStats}
-  eyebrow={`01 // ARCHIVE_PAGE_${String(currentPage).padStart(2, "0")}`}
-  pageTitle="Transmission feed"
-  lead="Continuing the archive stream with the same editorial layout and search-first browsing."
+  variant="dashboard"
 >
-  <section class="space-y-5">
-    {items.map((post, index) => <PostCard post={post} index={index + 1 + (currentPage - 1) * 10} />)}
+  <section class="dashboard-feed-list">
+    {items.map((post, index) => (
+      <PostCard post={post} index={index + 1 + (currentPage - 1) * 10} variant="dashboard" />
+    ))}
   </section>
-  <Pagination currentPage={currentPage} totalPages={totalPages} />
+  <Pagination currentPage={currentPage} totalPages={totalPages} variant="dashboard" />
 </PageLayout>

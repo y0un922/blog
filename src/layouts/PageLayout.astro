@@ -1,6 +1,8 @@
 ---
 import BaseLayout from "./BaseLayout.astro";
+import Navbar from "../components/Navbar.astro";
 import Sidebar from "../components/Sidebar.astro";
+import { getCategoryUrl, getPostUrl, getTagUrl, type CategorySummary, type PostEntry, type TagSummary, withBase } from "../utils/posts";
 
 const {
   title,
@@ -8,23 +10,197 @@ const {
   currentPath,
   categories,
   siteStats,
-  eyebrow,
-  pageTitle,
-  lead
-} = Astro.props;
+  posts = [],
+  tags = [],
+  variant = "dashboard",
+  toolbarLabel = "筛选: 全部文章",
+  chips = [],
+  activeCategory = ""
+} = Astro.props as {
+  title: string;
+  description: string;
+  currentPath: string;
+  categories: CategorySummary[];
+  posts?: PostEntry[];
+  tags?: TagSummary[];
+  siteStats: {
+    totalPosts: number;
+    totalCategories: number;
+    totalTags: number;
+    latest: Date | null;
+  };
+  variant?: "dashboard" | "archive";
+  toolbarLabel?: string;
+  chips?: { label: string; href?: string; active?: boolean }[];
+  activeCategory?: string;
+};
+const recentPosts = posts.slice(0, 3);
+const trendingTags = tags.slice(0, 3);
+const weeklyBars = [
+  { day: "周一", size: 3 },
+  { day: "周二", size: 4 },
+  { day: "周三", size: 5 },
+  { day: "周四", size: 6 },
+  { day: "周五", size: 4 },
+  { day: "周六", size: 3 },
+  { day: "周日", size: 5 }
+];
+const renderedChips = chips.length
+  ? chips
+  : [
+      { label: "全部", active: variant === "archive" },
+      { label: "AI" },
+      { label: "前端" }
+    ];
+const compactViews = (count: number) => `${Math.max(540, count * 210)} 次浏览`;
 ---
 
 <BaseLayout title={title} description={description} currentPath={currentPath}>
-  <div class="editorial-grid">
-    <Sidebar categories={categories} siteStats={siteStats} />
+  {
+    variant === "dashboard" ? (
+      <div class="dashboard-screen">
+        <aside class="dashboard-left">
+          <Sidebar categories={categories} siteStats={siteStats} posts={posts} />
+        </aside>
 
-    <section class="space-y-8">
-      <header class="panel ghost-outline rounded-xl px-5 py-6 md:px-7 md:py-7">
-        <p class="section-eyebrow">{eyebrow}</p>
-        <h1 class="section-title mt-4">{pageTitle}</h1>
-        {lead && <p class="mt-4 max-w-2xl text-sm text-[var(--fg-muted)] md:text-base">{lead}</p>}
-      </header>
-      <slot />
-    </section>
-  </div>
+        <section class="dashboard-main">
+          <Navbar currentPath={currentPath} variant="dashboard" />
+
+          <div class="dashboard-command panel ghost-outline">
+            <div class="dashboard-command__main">
+              <span class="dashboard-command__prompt">$</span>
+              <span class="dashboard-command__text">cat latest_posts.log | grep '#frontend'</span>
+              <span class="dashboard-command__hint">: open /posts --sort=latest</span>
+            </div>
+
+            <div class="dashboard-command__shortcuts">
+              <span class="dashboard-shortcut">Space Cmd</span>
+              <a class="dashboard-shortcut" href={withBase("/")}>g h 首页</a>
+              <button class="dashboard-shortcut" type="button" data-search-open>/ 搜索</button>
+            </div>
+          </div>
+
+          <div class="dashboard-body">
+            <div class="dashboard-feed" id="post-feed">
+              <slot />
+            </div>
+
+            <aside class="trend-panel panel ghost-outline">
+              <section class="trend-panel__section">
+                <p class="trend-panel__title">热门标签</p>
+                <div class="trend-panel__copy-list">
+                  {trendingTags.length > 0 ? (
+                    trendingTags.map((tag) => (
+                      <a href={getTagUrl(tag.label)} class="trend-panel__copy-row">
+                        <span>#{tag.label.toLowerCase()}</span>
+                        <span>{compactViews(tag.count)}</span>
+                      </a>
+                    ))
+                  ) : (
+                    <span>暂无趋势数据</span>
+                  )}
+                </div>
+              </section>
+
+              <section class="trend-panel__section">
+                <p class="trend-panel__title">每周浏览</p>
+                <div class="trend-chart">
+                  {weeklyBars.map((bar) => (
+                    <div class="trend-chart__row">
+                      <span>{bar.day}</span>
+                      <span class="trend-chart__fill" style={`--blocks:${bar.size};`}></span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <section class="trend-panel__section trend-panel__keymap">
+                <p class="trend-panel__title">lazyvim_keymap</p>
+                <div class="trend-panel__copy-list">
+                  <span>g h → 回到首页</span>
+                  <span>g p → 跳到文章列表</span>
+                  <span>j / k → 上下滚动</span>
+                  <span>/ → 全站搜索</span>
+                  <span>? → 打开快捷键</span>
+                  <span class="is-accent">:q → 关闭面板</span>
+                </div>
+              </section>
+
+              <div class="trend-panel__mode">
+                <span>模式</span>
+                <span>NORMAL</span>
+              </div>
+            </aside>
+          </div>
+        </section>
+      </div>
+    ) : (
+      <div class="archive-screen">
+        <Navbar currentPath={currentPath} variant="minimal" />
+
+        <div class="archive-body">
+          <section class="archive-left">
+            <div class="archive-toolbar panel ghost-outline">
+              <span>{toolbarLabel}</span>
+            </div>
+
+            <div class="archive-chip-row">
+              {renderedChips.map((chip) =>
+                chip.href ? (
+                  <a href={chip.href} class="archive-chip" data-active={chip.active}>
+                    {chip.label}
+                  </a>
+                ) : (
+                  <span class="archive-chip" data-active={chip.active}>{chip.label}</span>
+                )
+              )}
+            </div>
+
+            <div class="archive-list" id="post-feed">
+              <slot />
+            </div>
+          </section>
+
+          <aside class="archive-right">
+            <section class="archive-side-card panel ghost-outline">
+              <p class="archive-side-card__title">&gt; 搜索</p>
+              <button class="archive-search-button" type="button" data-search-open>
+                <span>搜索文章...</span>
+              </button>
+            </section>
+
+            <section class="archive-side-card panel ghost-outline">
+              <p class="archive-side-card__title">&gt; 分类</p>
+              <div class="archive-side-chip-list">
+                {categories.slice(0, 5).map((category) => (
+                  <a
+                    href={getCategoryUrl(category.slug)}
+                    class="archive-side-chip"
+                    data-active={activeCategory === category.slug}
+                  >
+                    {category.slug}
+                  </a>
+                ))}
+              </div>
+            </section>
+
+            <section class="archive-side-card panel ghost-outline">
+              <p class="archive-side-card__title">&gt; 最近文章</p>
+              <div class="archive-side-copy-list">
+                {recentPosts.map((post, index) => (
+                  <a href={getPostUrl(post)}>{`[${index + 1}] ${post.data.title}`}</a>
+                ))}
+              </div>
+            </section>
+
+            <section class="archive-side-card archive-side-card--accent panel ghost-outline">
+              <p class="archive-side-card__title">&gt; 订阅</p>
+              <p class="archive-side-card__body">每周一封邮件，推送终端技巧与新文章。</p>
+              <button class="archive-subscribe-button" type="button" data-search-open>订阅更新</button>
+            </section>
+          </aside>
+        </div>
+      </div>
+    )
+  }
 </BaseLayout>

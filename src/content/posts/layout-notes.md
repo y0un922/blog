@@ -4,6 +4,7 @@ description: "为什么“全居中卡片墙”很容易让技术博客失去力
 date: 2026-03-15
 category: "DESIGN_SYSTEM"
 tags: ["LAYOUT", "EDITORIAL", "CATPPUCCIN"]
+cover: "/covers/signal-lines.svg"
 draft: false
 ---
 

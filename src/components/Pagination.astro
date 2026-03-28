@@ -1,34 +1,43 @@
 ---
 import { getPageUrl } from "../utils/posts";
 
-const { currentPage, totalPages } = Astro.props;
+const { currentPage, totalPages, variant = "dashboard" } = Astro.props as {
+  currentPage: number;
+  totalPages: number;
+  variant?: "dashboard" | "archive";
+};
 
 const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1);
 ---
 
 {
   totalPages > 1 && (
-    <nav class="panel ghost-outline mt-8 flex flex-wrap items-center gap-3 rounded-lg px-4 py-4">
+    <nav class:list={["pagination-strip", "panel", "ghost-outline", variant === "archive" ? "is-archive" : "is-dashboard"]}>
       <a
-        class="terminal-button"
+        class="pagination-chip"
         href={currentPage > 1 ? getPageUrl(currentPage - 1) : "#"}
         aria-disabled={currentPage === 1}
       >
-        ← Prev
+        ← 上一页
       </a>
-      <div class="flex flex-wrap gap-2">
+      <div class="pagination-pages">
         {pageNumbers.map((page) => (
-          <a class="terminal-button" href={getPageUrl(page)} data-active={page === currentPage}>
+          <a
+            class="pagination-chip"
+            href={getPageUrl(page)}
+            data-active={page === currentPage}
+            aria-current={page === currentPage ? "page" : undefined}
+          >
             {String(page).padStart(2, "0")}
           </a>
         ))}
       </div>
       <a
-        class="terminal-button"
+        class="pagination-chip"
         href={currentPage < totalPages ? getPageUrl(currentPage + 1) : "#"}
         aria-disabled={currentPage === totalPages}
       >
-        Next →
+        下一页 →
       </a>
     </nav>
   )

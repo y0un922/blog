@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-labelledby="title desc">
+  <title id="title">Stacked node cover</title>
+  <desc id="desc">A dark geometric stack with lavender and blue terminal glow.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#111221"/>
+      <stop offset="100%" stop-color="#080913"/>
+    </linearGradient>
+    <linearGradient id="face" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#1f2234"/>
+      <stop offset="100%" stop-color="#0d0f1b"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="320" fill="url(#bg)"/>
+  <circle cx="160" cy="160" r="108" fill="#0e1020"/>
+  <g transform="translate(160 160)">
+    <g stroke="#89b4fa" stroke-opacity=".18" fill="none">
+      <circle r="96"/>
+      <circle r="72"/>
+      <circle r="48"/>
+    </g>
+    <g transform="rotate(-14)">
+      <polygon points="0,-76 64,-38 0,0 -64,-38" fill="url(#face)" stroke="#35394b"/>
+      <polygon points="0,0 64,-38 64,38 0,76" fill="#171a2a" stroke="#35394b"/>
+      <polygon points="0,0 -64,-38 -64,38 0,76" fill="#0c0f1d" stroke="#35394b"/>
+      <polygon points="0,-46 40,-24 0,-2 -40,-24" fill="#262a40"/>
+      <polygon points="0,-20 30,-4 0,12 -30,-4" fill="#1c2031"/>
+      <polygon points="0,6 22,18 0,30 -22,18" fill="#151827"/>
+      <path d="M0-76v152" stroke="#cba6f7" stroke-opacity=".4"/>
+      <path d="M-64-38 0 0 64-38" stroke="#89b4fa" stroke-opacity=".24"/>
+    </g>
+  </g>
+  <path d="M82 238c40-8 84-8 156 0" stroke="#cba6f7" stroke-opacity=".16" stroke-width="3" fill="none"/>
+</svg>

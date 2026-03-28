@@ -17,6 +17,7 @@ const posts = await getPublishedPosts();
 const { Content, headings } = await render(post);
 const { previous, next } = getAdjacentPosts(posts, post.id);
 const articleUrl = getPostUrl(post);
+const recentPosts = posts.filter((entry) => entry.id !== post.id).slice(0, 3);
 const structuredData = Astro.site
   ? {
       "@context": "https://schema.org",
@@ -24,6 +25,8 @@ const structuredData = Astro.site
       headline: post.data.title,
       description: post.data.description,
       datePublished: post.data.date.toISOString(),
+      articleSection: post.data.category,
+      keywords: post.data.tags.join(", "),
       author: {
         "@type": "Person",
         name: "y0un92"
@@ -38,6 +41,7 @@ const structuredData = Astro.site
   headings={headings}
   previous={previous}
   next={next}
+  recentPosts={recentPosts}
   currentPath={articleUrl}
   structuredData={structuredData}
 >

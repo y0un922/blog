@@ -1,6 +1,5 @@
 ---
 import Footer from "../components/Footer.astro";
-import Navbar from "../components/Navbar.astro";
 import SearchModal from "../components/SearchModal.astro";
 
 import "../styles/global.css";
@@ -16,6 +15,20 @@ const canonical = Astro.site ? new URL(currentPath, Astro.site).toString() : und
 const assetBase = import.meta.env.BASE_URL.endsWith("/")
   ? import.meta.env.BASE_URL
   : `${import.meta.env.BASE_URL}/`;
+const fontBase = `${assetBase}fonts`;
+const homePath = assetBase;
+const aboutPath = `${assetBase}about/`;
+const contactPath = `${assetBase}contact/`;
+const feedPath = `${assetBase}#post-feed`;
+const fontAssetVars = `
+  :root {
+    --font-space-grotesk-400: url("${fontBase}/space-grotesk-400.ttf") format("truetype");
+    --font-space-grotesk-500: url("${fontBase}/space-grotesk-500.ttf") format("truetype");
+    --font-space-grotesk-700: url("${fontBase}/space-grotesk-700.ttf") format("truetype");
+    --font-jetbrains-mono-400: url("${fontBase}/jetbrains-mono-400.ttf") format("truetype");
+    --font-jetbrains-mono-700: url("${fontBase}/jetbrains-mono-700.ttf") format("truetype");
+  }
+`;
 ---
 
 <!doctype html>
@@ -32,6 +45,7 @@ const assetBase = import.meta.env.BASE_URL.endsWith("/")
     <meta property="og:description" content={description} />
     {canonical && <meta property="og:url" content={canonical} />}
     <link rel="icon" href={`${assetBase}favicon.svg`} type="image/svg+xml" />
+    <style is:inline set:html={fontAssetVars} />
     {
       structuredData && (
         <script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />
@@ -44,30 +58,228 @@ const assetBase = import.meta.env.BASE_URL.endsWith("/")
       document.documentElement.classList.toggle("light", shouldUseLight);
     </script>
   </head>
-  <body class="screen-shell">
-    <Navbar currentPath={currentPath} />
+  <body class="screen-shell" data-route={currentPath}>
     <main class="site-frame">
       <slot />
       <Footer />
     </main>
     <SearchModal />
+    <div
+      class="glass-overlay fixed inset-0 z-50 hidden items-start justify-center px-4 py-20"
+      data-shortcuts-panel
+    >
+      <section class="search-modal-card shortcut-panel panel ghost-outline">
+        <div class="search-modal-card__head">
+          <div>
+            <p class="search-modal-card__eyebrow">10 // KEYMAP</p>
+            <h2 class="search-modal-card__title">lazyvim 风格快捷键</h2>
+          </div>
+          <button class="pagination-chip" type="button" data-shortcuts-close>Esc</button>
+        </div>
+
+        <div class="shortcut-grid">
+          <section class="shortcut-group panel ghost-outline">
+            <p class="shortcut-group__title">页面导航</p>
+            <div class="shortcut-list">
+              <div class="shortcut-item"><kbd class="shortcut-key">g h</kbd><span>回到首页</span></div>
+              <div class="shortcut-item"><kbd class="shortcut-key">g p</kbd><span>跳到文章列表</span></div>
+              <div class="shortcut-item"><kbd class="shortcut-key">g a</kbd><span>打开关于页</span></div>
+              <div class="shortcut-item"><kbd class="shortcut-key">g c</kbd><span>打开联系页</span></div>
+            </div>
+          </section>
+
+          <section class="shortcut-group panel ghost-outline">
+            <p class="shortcut-group__title">列表选择</p>
+            <div class="shortcut-list">
+              <div class="shortcut-item"><kbd class="shortcut-key">j</kbd><span>选择下一张卡片</span></div>
+              <div class="shortcut-item"><kbd class="shortcut-key">k</kbd><span>选择上一张卡片</span></div>
+              <div class="shortcut-item"><kbd class="shortcut-key">Enter</kbd><span>打开当前卡片</span></div>
+              <div class="shortcut-item"><kbd class="shortcut-key">g p</kbd><span>定位到列表并选中</span></div>
+            </div>
+          </section>
+
+          <section class="shortcut-group panel ghost-outline">
+            <p class="shortcut-group__title">滚动控制</p>
+            <div class="shortcut-list">
+              <div class="shortcut-item"><kbd class="shortcut-key">gg</kbd><span>回到顶部</span></div>
+              <div class="shortcut-item"><kbd class="shortcut-key">Shift + g</kbd><span>跳到底部</span></div>
+            </div>
+          </section>
+
+          <section class="shortcut-group panel ghost-outline">
+            <p class="shortcut-group__title">面板控制</p>
+            <div class="shortcut-list">
+              <div class="shortcut-item"><kbd class="shortcut-key">/</kbd><span>打开搜索</span></div>
+              <div class="shortcut-item"><kbd class="shortcut-key">?</kbd><span>打开快捷键帮助</span></div>
+              <div class="shortcut-item"><kbd class="shortcut-key">Esc</kbd><span>关闭当前面板</span></div>
+            </div>
+          </section>
+        </div>
+      </section>
+    </div>
     <button
-      class="terminal-button primary fixed bottom-6 right-6 z-30 hidden shadow-[var(--shadow-ambient)]"
+      class="terminal-button primary fixed bottom-6 right-4 z-30 hidden shadow-[var(--shadow-soft)] md:right-8"
       type="button"
       data-back-to-top
     >
-      ↑ Top
+      [↑] 返回顶部
     </button>
-    <script>
+    <script is:inline define:vars={{ homePath, aboutPath, contactPath, feedPath }}>
       const root = document.documentElement;
       const themeToggleButtons = [...document.querySelectorAll("[data-theme-toggle]")];
+      const searchModal = document.querySelector("[data-search-modal]");
       const backToTopButton = document.querySelector("[data-back-to-top]");
       const menuToggle = document.querySelector("[data-menu-toggle]");
       const menuPanel = document.querySelector("[data-menu-panel]");
+      const shortcutsPanel = document.querySelector("[data-shortcuts-panel]");
+      const shortcutsOpeners = [...document.querySelectorAll("[data-shortcuts-open]")];
+      const shortcutsClosers = [...document.querySelectorAll("[data-shortcuts-close]")];
+      const sequenceTimeoutMs = 650;
+      let pendingSequence = "";
+      let sequenceTimeoutId = 0;
+      let activeCardIndex = -1;
 
-      const applyTheme = (theme: "dark" | "light") => {
+      const applyTheme = (theme) => {
         root.classList.toggle("light", theme === "light");
         localStorage.setItem("theme", theme);
+      };
+
+      const isSearchOpen = () => searchModal?.classList.contains("flex");
+      const isShortcutsOpen = () => shortcutsPanel?.classList.contains("flex");
+      const isMenuOpen = () => Boolean(menuPanel && !menuPanel.classList.contains("hidden"));
+      const isEditableTarget = (target) =>
+        target instanceof HTMLElement &&
+        Boolean(target.closest('input, textarea, select, [contenteditable="true"]'));
+      const syncPageLock = () => {
+        root.classList.toggle("overflow-hidden", Boolean(isSearchOpen() || isShortcutsOpen()));
+      };
+      const openSearch = () => {
+        const trigger = document.querySelector("[data-search-open]");
+        if (trigger instanceof HTMLElement && !isSearchOpen()) {
+          trigger.click();
+        }
+      };
+      const openShortcuts = () => {
+        if (!shortcutsPanel || isShortcutsOpen()) {
+          return;
+        }
+
+        shortcutsPanel.classList.remove("hidden");
+        shortcutsPanel.classList.add("flex");
+        syncPageLock();
+      };
+      const closeShortcuts = () => {
+        if (!shortcutsPanel || !isShortcutsOpen()) {
+          return false;
+        }
+
+        shortcutsPanel.classList.add("hidden");
+        shortcutsPanel.classList.remove("flex");
+        syncPageLock();
+        return true;
+      };
+      const closeMenu = () => {
+        if (!isMenuOpen()) {
+          return false;
+        }
+
+        menuPanel?.classList.add("hidden");
+        return true;
+      };
+      const clearSequence = () => {
+        pendingSequence = "";
+        window.clearTimeout(sequenceTimeoutId);
+      };
+      const setSequence = (nextSequence) => {
+        pendingSequence = nextSequence;
+        window.clearTimeout(sequenceTimeoutId);
+        sequenceTimeoutId = window.setTimeout(() => {
+          pendingSequence = "";
+        }, sequenceTimeoutMs);
+      };
+      const navigateTo = (href) => {
+        window.location.assign(href);
+      };
+      const getFeedCards = () =>
+        [...document.querySelectorAll("#post-feed [data-shortcut-card]")].filter(
+          (card) => card instanceof HTMLElement
+        );
+      const syncActiveCard = () => {
+        const cards = getFeedCards();
+
+        cards.forEach((card, index) => {
+          card.dataset.selected = index === activeCardIndex ? "true" : "false";
+        });
+      };
+      const setActiveCard = (nextIndex, options = {}) => {
+        const { scroll = true } = options;
+        const cards = getFeedCards();
+
+        if (!cards.length) {
+          activeCardIndex = -1;
+          return false;
+        }
+
+        activeCardIndex = Math.max(0, Math.min(nextIndex, cards.length - 1));
+        syncActiveCard();
+
+        if (scroll) {
+          cards[activeCardIndex]?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+
+        return true;
+      };
+      const moveActiveCard = (direction) => {
+        const cards = getFeedCards();
+
+        if (!cards.length) {
+          activeCardIndex = -1;
+          return false;
+        }
+
+        if (activeCardIndex < 0) {
+          return setActiveCard(direction > 0 ? 0 : cards.length - 1);
+        }
+
+        return setActiveCard(activeCardIndex + direction);
+      };
+      const openActiveCard = () => {
+        const cards = getFeedCards();
+
+        if (!cards.length) {
+          activeCardIndex = -1;
+          return false;
+        }
+
+        if (activeCardIndex < 0) {
+          setActiveCard(0, { scroll: false });
+        }
+
+        const activeCard = cards[activeCardIndex];
+        const activeLink = activeCard?.querySelector("[data-shortcut-link]");
+
+        if (activeLink instanceof HTMLAnchorElement) {
+          navigateTo(activeLink.href);
+          return true;
+        }
+
+        return false;
+      };
+      const goToFeed = () => {
+        const feedAnchor = document.querySelector("#post-feed");
+        const cards = getFeedCards();
+
+        if (cards.length) {
+          setActiveCard(activeCardIndex < 0 ? 0 : activeCardIndex);
+          return;
+        }
+
+        if (feedAnchor instanceof HTMLElement) {
+          feedAnchor.scrollIntoView({ behavior: "smooth", block: "start" });
+          return;
+        }
+
+        navigateTo(feedPath);
       };
 
       themeToggleButtons.forEach((button) => {
@@ -76,8 +288,17 @@ const assetBase = import.meta.env.BASE_URL.endsWith("/")
         });
       });
 
+      shortcutsOpeners.forEach((button) => button.addEventListener("click", openShortcuts));
+      shortcutsClosers.forEach((button) => button.addEventListener("click", closeShortcuts));
+
       menuToggle?.addEventListener("click", () => {
         menuPanel?.classList.toggle("hidden");
+      });
+
+      shortcutsPanel?.addEventListener("click", (event) => {
+        if (event.target === shortcutsPanel) {
+          closeShortcuts();
+        }
       });
 
       window.addEventListener("scroll", () => {
@@ -90,6 +311,121 @@ const assetBase = import.meta.env.BASE_URL.endsWith("/")
 
       backToTopButton?.addEventListener("click", () => {
         window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+
+      window.addEventListener("keydown", (event) => {
+        if (event.defaultPrevented) {
+          return;
+        }
+
+        if (event.metaKey || event.ctrlKey || event.altKey) {
+          clearSequence();
+          return;
+        }
+
+        if (event.key === "Escape") {
+          const handled = closeShortcuts() || closeMenu();
+          if (handled) {
+            event.preventDefault();
+          }
+          clearSequence();
+          return;
+        }
+
+        if (isSearchOpen() || isShortcutsOpen()) {
+          clearSequence();
+          return;
+        }
+
+        if (isEditableTarget(event.target)) {
+          clearSequence();
+          return;
+        }
+
+        const key = event.key;
+
+        if (pendingSequence === "g") {
+          clearSequence();
+
+          if (key === "g") {
+            event.preventDefault();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+            return;
+          }
+
+          if (key === "h") {
+            event.preventDefault();
+            navigateTo(homePath);
+            return;
+          }
+
+          if (key === "a") {
+            event.preventDefault();
+            navigateTo(aboutPath);
+            return;
+          }
+
+          if (key === "c") {
+            event.preventDefault();
+            navigateTo(contactPath);
+            return;
+          }
+
+          if (key === "p") {
+            event.preventDefault();
+            goToFeed();
+            return;
+          }
+        }
+
+        if (key === "g") {
+          event.preventDefault();
+          setSequence("g");
+          return;
+        }
+
+        if (key === "/") {
+          event.preventDefault();
+          openSearch();
+          return;
+        }
+
+        if (event.key === "?") {
+          event.preventDefault();
+          openShortcuts();
+          return;
+        }
+
+        if (event.key === "j") {
+          event.preventDefault();
+          if (!moveActiveCard(1)) {
+            window.scrollBy({ top: 88, behavior: "smooth" });
+          }
+          return;
+        }
+
+        if (event.key === "k") {
+          event.preventDefault();
+          if (!moveActiveCard(-1)) {
+            window.scrollBy({ top: -88, behavior: "smooth" });
+          }
+          return;
+        }
+
+        if (event.key === "Enter") {
+          if (openActiveCard()) {
+            event.preventDefault();
+          }
+          return;
+        }
+
+        if (event.key === "G") {
+          event.preventDefault();
+          window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+          return;
+        }
+
+        clearSequence();
       });
     </script>
   </body>

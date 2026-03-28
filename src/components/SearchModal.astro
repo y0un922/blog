@@ -2,32 +2,45 @@
 const baseUrl = import.meta.env.BASE_URL.endsWith("/")
   ? import.meta.env.BASE_URL
   : `${import.meta.env.BASE_URL}/`;
+const searchIndexUrl = `${baseUrl}search-index.json`;
+const postsBaseUrl = `${baseUrl}posts/`;
 ---
 
-<div class="glass-overlay fixed inset-0 z-50 hidden items-start justify-center px-4 py-20" data-search-modal data-base-url={baseUrl}>
-  <div class="panel ghost-outline w-full max-w-3xl rounded-2xl p-5 md:p-6">
-    <div class="flex items-center justify-between gap-4">
+<div
+  class="glass-overlay fixed inset-0 z-50 hidden items-start justify-center px-4 py-20"
+  data-search-modal
+  data-search-index-url={searchIndexUrl}
+  data-posts-base-url={postsBaseUrl}
+>
+  <div class="search-modal-card panel ghost-outline">
+    <div class="search-modal-card__head">
       <div>
-        <p class="section-eyebrow">09 // QUERY_STRING</p>
-        <h2 class="mt-2 text-2xl font-semibold tracking-[-0.03em]">Search the archive</h2>
+        <p class="search-modal-card__eyebrow">09 // 查询字符串</p>
+        <h2 class="search-modal-card__title">搜索归档</h2>
       </div>
-      <button class="terminal-button" type="button" data-search-close>Esc</button>
+      <button class="pagination-chip" type="button" data-search-close>Esc</button>
     </div>
 
-    <div class="search-shell mt-6">
+    <div class="search-command-bar">
+      <span>$ load <strong>search-index.json</strong></span>
+      <span>mode <strong>fuzzy-match</strong></span>
+      <span>result cap <strong>08</strong></span>
+    </div>
+
+    <div class="search-shell">
       <span aria-hidden="true">⌕</span>
       <input
         class="w-full bg-transparent outline-none placeholder:text-[var(--fg-muted)]"
         type="search"
         name="query"
-        placeholder="Type title, tag, or category..."
+        placeholder="输入标题、标签或分类..."
         data-search-input
       />
     </div>
 
-    <ul class="mt-6 space-y-3" data-search-results>
-      <li class="rounded-lg px-4 py-5 text-sm text-[var(--fg-muted)] panel-high">
-        Press <span class="font-mono">Ctrl/Cmd + K</span> to open search from anywhere.
+    <ul class="search-results" data-search-results>
+      <li class="search-result-empty">
+        按 <span class="font-mono">Ctrl/Cmd + K</span> 可在任意页面打开搜索。
       </li>
     </ul>
   </div>
@@ -48,20 +61,23 @@ const baseUrl = import.meta.env.BASE_URL.endsWith("/")
   const results = modal?.querySelector("[data-search-results]") as HTMLUListElement | null;
   const openers = [...document.querySelectorAll("[data-search-open]")];
   const closers = [...document.querySelectorAll("[data-search-close]")];
-  const baseUrl = modal?.getAttribute("data-base-url") ?? "/";
+  const searchIndexUrl = modal?.getAttribute("data-search-index-url");
+  const postsBaseUrl = modal?.getAttribute("data-posts-base-url");
 
   let fuse: import("fuse.js").default<SearchDocument> | null = null;
   let documents: SearchDocument[] = [];
+  let visibleItems: SearchDocument[] = [];
   let activeIndex = -1;
+  const isOpen = () => modal?.classList.contains("flex");
 
   const ensureSearch = async () => {
-    if (fuse) {
+    if (fuse || !searchIndexUrl) {
       return;
     }
 
     const [{ default: Fuse }, response] = await Promise.all([
       import("fuse.js"),
-      fetch(`${baseUrl}search-index.json`)
+      fetch(searchIndexUrl)
     ]) as [typeof import("fuse.js"), Response];
 
     documents = await response.json();
@@ -73,18 +89,28 @@ const baseUrl = import.meta.env.BASE_URL.endsWith("/")
   };
 
   const renderResults = (items: SearchDocument[]) => {
-    if (!results) {
+    if (!results || !postsBaseUrl) {
       return;
     }
 
+    visibleItems = items;
+
     if (!items.length) {
       results.innerHTML = `
-        <li class="rounded-lg px-4 py-5 text-sm text-[var(--fg-muted)] panel-high">
-          No records found for the current query.
+        <li class="search-result-empty">
+          当前查询没有匹配结果。
         </li>
       `;
       activeIndex = -1;
       return;
+    }
+
+    if (activeIndex < 0) {
+      activeIndex = 0;
+    }
+
+    if (activeIndex >= items.length) {
+      activeIndex = items.length - 1;
     }
 
     results.innerHTML = items
@@ -92,16 +118,17 @@ const baseUrl = import.meta.env.BASE_URL.endsWith("/")
         (item: SearchDocument, index: number) => `
           <li>
             <a
-              href="${baseUrl}posts/${item.slug}/"
-              class="story-card block ${index === activeIndex ? "panel-high" : ""}"
+              href="${postsBaseUrl}${item.slug}/"
+              class="search-result-card ${index === activeIndex ? "is-active" : ""}"
               data-search-result
             >
-              <div class="flex items-center gap-3">
-                <span class="section-eyebrow text-[var(--color-tertiary)]">${String(index + 1).padStart(2, "0")}</span>
-                <span class="terminal-copy">${item.date}</span>
+              <div class="search-result-card__meta">
+                <span>${String(index + 1).padStart(2, "0")}</span>
+                <span>${item.date}</span>
+                <span>${item.category}</span>
               </div>
-              <h3 class="mt-3 text-xl font-semibold tracking-[-0.03em] text-[var(--fg-default)]">${item.title}</h3>
-              <p class="mt-2 text-sm text-[var(--fg-muted)]">${item.description}</p>
+              <h3 class="search-result-card__title">${item.title}</h3>
+              <p class="search-result-card__summary">${item.description}</p>
             </a>
           </li>
         `
@@ -113,16 +140,57 @@ const baseUrl = import.meta.env.BASE_URL.endsWith("/")
     modal?.classList.add("hidden");
     modal?.classList.remove("flex");
     document.documentElement.classList.remove("overflow-hidden");
+    input && (input.value = "");
     activeIndex = -1;
   };
 
   const open = async () => {
+    if (!searchIndexUrl || !postsBaseUrl) {
+      return;
+    }
+
     await ensureSearch();
     modal?.classList.remove("hidden");
     modal?.classList.add("flex");
     document.documentElement.classList.add("overflow-hidden");
     input?.focus();
+    activeIndex = 0;
     renderResults(documents.slice(0, 6));
+  };
+
+  const syncResults = () => {
+    const query = input?.value.trim() ?? "";
+
+    if (!query) {
+      activeIndex = 0;
+      renderResults(documents.slice(0, 6));
+      return;
+    }
+
+    const matches = fuse?.search(query, { limit: 8 }).map((entry) => entry.item) ?? [];
+    activeIndex = matches.length ? 0 : -1;
+    renderResults(matches);
+  };
+
+  const moveSelection = (direction: number) => {
+    if (!visibleItems.length) {
+      return;
+    }
+
+    activeIndex = (activeIndex + direction + visibleItems.length) % visibleItems.length;
+    renderResults(visibleItems);
+  };
+
+  const openActiveResult = () => {
+    if (!postsBaseUrl) {
+      return;
+    }
+
+    const nextItem = visibleItems[activeIndex];
+
+    if (nextItem) {
+      window.location.href = `${postsBaseUrl}${nextItem.slug}/`;
+    }
   };
 
   openers.forEach((button) => button.addEventListener("click", open));
@@ -140,20 +208,32 @@ const baseUrl = import.meta.env.BASE_URL.endsWith("/")
       await open();
     }
 
-    if (event.key === "Escape") {
-      close();
-    }
-  });
-
-  input?.addEventListener("input", () => {
-    const query = input.value.trim();
-
-    if (!query) {
-      renderResults(documents.slice(0, 6));
+    if (!isOpen()) {
       return;
     }
 
-    const matches = fuse?.search(query, { limit: 8 }).map((entry) => entry.item) ?? [];
-    renderResults(matches);
+    if (event.key === "Escape") {
+      close();
+      return;
+    }
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      moveSelection(1);
+      return;
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      moveSelection(-1);
+      return;
+    }
+
+    if (event.key === "Enter" && activeIndex >= 0) {
+      event.preventDefault();
+      openActiveResult();
+    }
   });
+
+  input?.addEventListener("input", syncResults);
 </script>

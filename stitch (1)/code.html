@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MONOSPORE // Terminal Editorial</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-tertiary-fixed-variant": "#603a58",
+              "secondary-container": "#124988",
+              "tertiary": "#f5c2e7",
+              "primary-fixed-dim": "#d9b9ff",
+              "surface": "#121221",
+              "on-error-container": "#ffdad6",
+              "inverse-surface": "#e3e0f7",
+              "outline": "#968e9a",
+              "on-secondary-fixed": "#001b3c",
+              "outline-variant": "#4a444f",
+              "on-primary-fixed": "#290350",
+              "surface-container-highest": "#333344",
+              "surface-dim": "#121221",
+              "on-secondary": "#003062",
+              "tertiary-fixed-dim": "#eab8dc",
+              "secondary-fixed-dim": "#a8c8ff",
+              "on-tertiary-fixed": "#2f0f2b",
+              "on-surface": "#e3e0f7",
+              "surface-container": "#1e1e2e",
+              "inverse-primary": "#704f98",
+              "primary-fixed": "#eedbff",
+              "tertiary-fixed": "#ffd7f2",
+              "background": "#121221",
+              "on-surface-variant": "#cdc3d1",
+              "error": "#ffb4ab",
+              "on-primary-fixed-variant": "#57377f",
+              "on-error": "#690005",
+              "error-container": "#93000a",
+              "on-primary": "#3f1e66",
+              "secondary-fixed": "#d5e3ff",
+              "surface-container-lowest": "#0d0d1c",
+              "on-tertiary-container": "#603a59",
+              "surface-variant": "#333344",
+              "surface-bright": "#383849",
+              "primary-container": "#cba6f7",
+              "on-secondary-container": "#8fbaff",
+              "primary": "#e2c7ff",
+              "secondary": "#a8c8ff",
+              "on-secondary-fixed-variant": "#0e4685",
+              "on-tertiary": "#472441",
+              "tertiary-container": "#d8a7cb",
+              "surface-tint": "#d9b9ff",
+              "on-primary-container": "#57377f",
+              "surface-container-low": "#1a1a2a",
+              "inverse-on-surface": "#2f2f40",
+              "on-background": "#e3e0f7",
+              "surface-container-high": "#292839",
+              "cat-green": "#a6e3a1",
+              "cat-peach": "#fab387",
+              "cat-blue": "#89b4fa"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk", "sans-serif"],
+              "body": ["Space Grotesk", "sans-serif"],
+              "label": ["Space Grotesk", "sans-serif"],
+              "mono": ["JetBrains Mono", "monospace"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #121221; }
+        ::-webkit-scrollbar-thumb { background: #333344; }
+        .glass-panel {
+            background: rgba(30, 30, 46, 0.7);
+            backdrop-filter: blur(24px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<nav class="fixed top-0 z-50 flex justify-between items-center w-full px-6 py-4 max-w-full bg-[#1e1e2e] border-b-0">
+<div class="flex items-center gap-8">
+<span class="text-lg font-mono text-[#cba6f7]">user@blog:~$</span>
+<div class="hidden md:flex gap-6 items-center">
+<a class="font-mono text-sm tracking-tighter text-[#cba6f7] border-l-2 border-[#a8c8ff] pl-2 transition-colors duration-200" href="#">HOME</a>
+<a class="font-mono text-sm tracking-tighter text-[#cdc3d1] hover:text-[#e2c7ff] hover:bg-[#292839] px-2 py-1 transition-colors duration-200" href="#">POSTS</a>
+<a class="font-mono text-sm tracking-tighter text-[#cdc3d1] hover:text-[#e2c7ff] hover:bg-[#292839] px-2 py-1 transition-colors duration-200" href="#">ABOUT</a>
+<a class="font-mono text-sm tracking-tighter text-[#cdc3d1] hover:text-[#e2c7ff] hover:bg-[#292839] px-2 py-1 transition-colors duration-200" href="#">CONTACT</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<!-- Language Switcher -->
+<div class="hidden sm:flex items-center font-mono text-[10px] tracking-widest text-outline-variant mr-2">
+<button class="hover:text-cat-blue transition-colors px-1">[ZH]</button>
+<span class="px-0.5">/</span>
+<button class="text-cat-blue px-1 font-bold">[EN]</button>
+</div>
+<!-- Theme Toggle -->
+<button class="p-2 hover:bg-[#292839] transition-colors duration-200 text-[#cdc3d1] group flex items-center gap-2" title="Toggle Theme">
+<span class="material-symbols-outlined text-[20px] group-hover:text-cat-peach" data-icon="dark_mode">dark_mode</span>
+</button>
+<!-- Terminal Icon -->
+<button class="p-2 hover:bg-[#292839] transition-colors duration-200 text-[#cba6f7]">
+<span class="material-symbols-outlined" data-icon="terminal">terminal</span>
+</button>
+</div>
+</nav>
+<main class="pt-24 pb-32 px-6 md:px-12 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12">
+<!-- Sidebar -->
+<aside class="lg:col-span-4 space-y-12 order-2 lg:order-1">
+<!-- Branding ASCII Style -->
+<div class="mb-16">
+<h1 class="font-mono text-4xl font-bold text-[#cba6f7] leading-none tracking-tighter tracking-[0.2em]" style="text-shadow: 2px 2px 0px rgba(203, 166, 247, 0.2);">MONOSPORE</h1>
+<p class="mt-4 font-mono text-xs text-on-surface-variant uppercase tracking-widest">
+                [ VER 4.0.2-STABLE ] // NEO-TECHNICAL MANUSCRIPT
+            </p>
+</div>
+<!-- SEARCH CONSOLE -->
+<section class="space-y-4">
+<div class="flex items-center gap-2 text-cat-peach">
+<span class="material-symbols-outlined text-sm">search</span>
+<span class="font-mono text-xs font-bold tracking-widest uppercase">SEARCH CONSOLE</span>
+</div>
+<div class="relative group">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 font-mono text-cat-peach text-sm">&gt;</span>
+<input class="w-full bg-surface-container-lowest border-none focus:ring-1 focus:ring-cat-peach py-3 pl-8 text-sm font-mono text-on-surface placeholder:text-outline-variant transition-all" placeholder="QUERY_STRING..." type="text"/>
+</div>
+</section>
+<!-- SYSTEM SPECS -->
+<section class="space-y-6">
+<div class="flex items-center gap-2 text-cat-green">
+<span class="material-symbols-outlined text-sm">settings_input_component</span>
+<span class="font-mono text-xs font-bold tracking-widest uppercase">SYSTEM SPECS</span>
+</div>
+<div class="space-y-4 bg-surface-container-low p-4 rounded-sm border-l-2 border-cat-green">
+<div class="space-y-2">
+<div class="flex justify-between font-mono text-[10px] text-on-surface-variant">
+<span>CPU_LOAD</span>
+<span class="text-cat-green">42.8%</span>
+</div>
+<div class="h-1 bg-surface-container-highest w-full overflow-hidden">
+<div class="h-full bg-cat-green w-[42%]"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between font-mono text-[10px] text-on-surface-variant">
+<span>MEM_USAGE</span>
+<span class="text-cat-green">6.1GB / 16GB</span>
+</div>
+<div class="h-1 bg-surface-container-highest w-full overflow-hidden">
+<div class="h-full bg-cat-green w-[38%]"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- INDEX / FOLDERS -->
+<section class="space-y-4">
+<div class="flex items-center gap-2 text-cat-blue">
+<span class="material-symbols-outlined text-sm">folder_open</span>
+<span class="font-mono text-xs font-bold tracking-widest uppercase">INDEX / FOLDERS</span>
+</div>
+<ul class="font-mono text-sm space-y-2">
+<li class="flex items-center gap-3 p-2 hover:bg-surface-container transition-colors group">
+<span class="text-outline-variant group-hover:text-cat-blue transition-colors">01.</span>
+<a class="text-on-surface" href="#">ENGINEERING_NOTES</a>
+<span class="ml-auto text-[10px] text-outline-variant bg-surface-container-highest px-1">12</span>
+</li>
+<li class="flex items-center gap-3 p-2 hover:bg-surface-container transition-colors group">
+<span class="text-outline-variant group-hover:text-cat-blue transition-colors">02.</span>
+<a class="text-on-surface" href="#">AESTHETIC_THEORY</a>
+<span class="ml-auto text-[10px] text-outline-variant bg-surface-container-highest px-1">08</span>
+</li>
+<li class="flex items-center gap-3 p-2 hover:bg-surface-container transition-colors group">
+<span class="text-outline-variant group-hover:text-cat-blue transition-colors">03.</span>
+<a class="text-on-surface" href="#">HARDWARE_MODS</a>
+<span class="ml-auto text-[10px] text-outline-variant bg-surface-container-highest px-1">24</span>
+</li>
+</ul>
+</section>
+</aside>
+<!-- Main Content -->
+<div class="lg:col-span-8 order-1 lg:order-2">
+<header class="mb-12 border-b border-outline-variant/20 pb-8">
+<div class="flex items-baseline gap-4 mb-2">
+<span class="font-mono text-xs text-secondary">01 // RECENT_ARCHIVES</span>
+<span class="h-px flex-grow bg-outline-variant/20"></span>
+</div>
+<h2 class="text-4xl font-headline font-bold tracking-tighter">Transmission Feed</h2>
+</header>
+<div class="space-y-12">
+<!-- Post 1 -->
+<article class="group relative">
+<div class="flex flex-col md:flex-row gap-6">
+<div class="w-full md:w-48 aspect-square flex-shrink-0 bg-surface-container overflow-hidden rounded-sm">
+<img class="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500" data-alt="Close up of a mechanical keyboard with glowing purple and blue RGB backlighting in a dark room setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD41GPrFdKJo5P-0LfaqeeV0MnZTwEnaa0zMo9N7me7IIexpPPOJx1E8DFP78xSjIcGbE5MFcfPD1PyFVM8Ixgdwz27XTuzBneCDY6oF4ttWEnT-fY_tateZYHSfVLFYwI9Jb7WwTuuF2hd0zFnQIcZKE6DoXndwMxCFXsiNHeztkvHThZa5GtHcUaWm0KUBsYmbiY3kgMdn_qXfe-bR3bSdJ0XuJvBIj0ausdxmYamC85NUoGJvtexN7bB_Zlp2NzJ87ALvHQqHh4"/>
+</div>
+<div class="flex-grow">
+<div class="flex items-center gap-3 mb-3">
+<span class="font-mono text-tertiary font-bold">[1]</span>
+<time class="font-mono text-[10px] text-on-surface-variant uppercase tracking-widest">2024-05-20 // 08:42:00</time>
+</div>
+<h3 class="text-2xl font-headline font-bold text-cat-blue mb-4 group-hover:underline decoration-cat-blue underline-offset-4 cursor-pointer transition-all">
+                            Designing for the Post-Human Interface
+                        </h3>
+<p class="text-on-surface-variant leading-relaxed mb-6 max-w-2xl">
+                            An exploration into high-contrast dark mode interfaces and why the terminal aesthetic continues to dominate power-user psychology...
+                        </p>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono px-2 py-0.5 border border-outline-variant text-outline-variant">UI/UX</span>
+<span class="text-[10px] font-mono px-2 py-0.5 border border-outline-variant text-outline-variant">CYBERPUNK</span>
+</div>
+</div>
+</div>
+</article>
+<!-- Post 2 -->
+<article class="group relative">
+<div class="flex flex-col md:flex-row gap-6">
+<div class="w-full md:w-48 aspect-square flex-shrink-0 bg-surface-container overflow-hidden rounded-sm">
+<img class="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500" data-alt="Abstract 3D render of glitching geometric shapes in neon purple and cyan against a black background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuXv7_uiNMKJG7DmuWqBimcKfYMjQT0i2ZuOF-yLAgN4Eg7szkszTLPKL0Jx3k7ad1DM5OYg7LFspNtKyRvd7H142cqMFUpZYQMqlFw5IGy2xrtdg12fAYCOtr76LW51DvGQQ99M3IMV7VjCM9oTlP2sGNd2B6vKcPiV4ixs0d7OnIuz4_RqMDvQZtdIuNmB-3SoSaDovVvlOCwvg4A7ScH-5IJDRR-ph5QPnzfUyBcehftF7A5hoWkA0Bo5zI9Dn5KrJ3s-8La8Q"/>
+</div>
+<div class="flex-grow">
+<div class="flex items-center gap-3 mb-3">
+<span class="font-mono text-tertiary font-bold">[2]</span>
+<time class="font-mono text-[10px] text-on-surface-variant uppercase tracking-widest">2024-05-18 // 22:15:33</time>
+</div>
+<h3 class="text-2xl font-headline font-bold text-cat-blue mb-4 group-hover:underline decoration-cat-blue underline-offset-4 cursor-pointer transition-all">
+                            Protocol Over Personalization: The Case for Monospace
+                        </h3>
+<p class="text-on-surface-variant leading-relaxed mb-6 max-w-2xl">
+                            Why we are reverting to fixed-width typography for high-density information environments and the technical manuscript revival...
+                        </p>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono px-2 py-0.5 border border-outline-variant text-outline-variant">TYPOGRAPHY</span>
+<span class="text-[10px] font-mono px-2 py-0.5 border border-outline-variant text-outline-variant">ESSAY</span>
+</div>
+</div>
+</div>
+</article>
+<!-- Post 3 -->
+<article class="group relative">
+<div class="flex flex-col md:flex-row gap-6">
+<div class="w-full md:w-48 aspect-square flex-shrink-0 bg-surface-container overflow-hidden rounded-sm">
+<img class="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500" data-alt="Code on a screen showing complex algorithmic functions with syntax highlighting in a dark theme" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqlHa1EgRFhlF-NoK5KZU-s-TY5L4k16gFqfS6DdVlBYzqJJsnESSYu_QM-cMz0P2ZdYIj3jPEyj6nplBTA6yOxAGBBkfh-J6xQPrPdAWBB-Vs3oyvFZhbNT6ykf8VnWg_8OOBO0Fz-yIxrBA5IR1IIpZDBdXydaINMDQ0rFiI8nYVJ-LW6oTOh8M7Kd4wZ8kAVHFbjCphZYbKCUc-ZqzRpafztfSbXIHYvdsdppXFz7quAI6Htm11hU3gITq6OwOMy7kF7VRDxBE"/>
+</div>
+<div class="flex-grow">
+<div class="flex items-center gap-3 mb-3">
+<span class="font-mono text-tertiary font-bold">[3]</span>
+<time class="font-mono text-[10px] text-on-surface-variant uppercase tracking-widest">2024-05-15 // 14:02:11</time>
+</div>
+<h3 class="text-2xl font-headline font-bold text-cat-blue mb-4 group-hover:underline decoration-cat-blue underline-offset-4 cursor-pointer transition-all">
+                            Custom Hardware: Building the Ultimate Dev Deck
+                        </h3>
+<p class="text-on-surface-variant leading-relaxed mb-6 max-w-2xl">
+                            Part 1: Sourcing parts for a custom mechanical input device using a 40% layout and aluminum chassis...
+                        </p>
+<div class="flex gap-2">
+<span class="text-[10px] font-mono px-2 py-0.5 border border-outline-variant text-outline-variant">HARDWARE</span>
+<span class="text-[10px] font-mono px-2 py-0.5 border border-outline-variant text-outline-variant">WORKLOG</span>
+</div>
+</div>
+</div>
+</article>
+<!-- Load More Button -->
+<div class="pt-8">
+<button class="font-mono text-cat-green text-sm flex items-center gap-2 hover:bg-cat-green/10 px-4 py-2 border border-cat-green/30 transition-all active:scale-[0.98]">
+<span class="animate-pulse">&gt;</span> LOAD_MORE_DATA --OFFSET 3
+                </button>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-[#0d0d1c] w-full px-8 py-6 flex flex-col md:flex-row justify-between items-center gap-4">
+<div class="flex flex-col items-center md:items-start gap-1">
+<span class="font-mono text-xs tracking-widest uppercase text-[#4a444f]">SYS_REF: MAIN_BRANCH // 2024-05-21 14:02:11</span>
+<span class="font-mono text-[10px] text-[#4a444f]">ENCRYPTED_CONNECTION: AES-256-GCM</span>
+</div>
+<div class="flex items-center gap-8">
+<a class="font-mono text-xs tracking-widest uppercase text-[#4a444f] hover:text-[#a8c8ff] transition-all active:translate-y-[-1px]" href="#">[S] SEARCH</a>
+<a class="font-mono text-xs tracking-widest uppercase text-[#89b4fa] font-bold active:translate-y-[-1px]" href="#">[H] HOME</a>
+<a class="font-mono text-xs tracking-widest uppercase text-[#4a444f] hover:text-[#a8c8ff] transition-all active:translate-y-[-1px]" href="#">[G] GITHUB</a>
+</div>
+</footer>
+<!-- FAB -->
+<button class="fixed bottom-8 right-8 w-12 h-12 bg-surface-container border border-outline-variant/30 flex items-center justify-center text-secondary hover:bg-surface-bright transition-all">
+<span class="material-symbols-outlined">expand_less</span>
+</button>
+</body></html>

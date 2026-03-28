@@ -17,6 +17,11 @@ const categories = groupByCategory(posts);
 const siteStats = getSiteStats(posts);
 const category = Astro.params.category ?? "";
 const filteredPosts = getPostsForCategory(posts, category);
+const chips = [
+  { label: "全部", href: withBase("/") },
+  { label: category, active: true },
+  { label: "归档" }
+];
 ---
 
 <PageLayout
@@ -24,12 +29,14 @@ const filteredPosts = getPostsForCategory(posts, category);
   description={`Posts filed under ${category}.`}
   currentPath={withBase(`/categories/${category}/`)}
   categories={categories}
+  posts={posts}
   siteStats={siteStats}
-  eyebrow={`04 // ${category}`}
-  pageTitle="Category feed"
-  lead={`Published entries filed under ${category}.`}
+  variant="archive"
+  toolbarLabel={`筛选: 分类 ${category.toLowerCase()}`}
+  chips={chips}
+  activeCategory={category}
 >
-  <section class="space-y-5">
-    {filteredPosts.map((post, index) => <PostCard post={post} index={index + 1} />)}
+  <section class="archive-list">
+    {filteredPosts.map((post, index) => <PostCard post={post} index={index + 1} variant="archive" />)}
   </section>
 </PageLayout>

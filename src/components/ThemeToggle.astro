@@ -1,10 +1,16 @@
+---
+const { variant = "icon" } = Astro.props as { variant?: "icon" | "chip" };
+const className = variant === "chip" ? "tool-chip" : "nav-icon-button";
+const label = variant === "chip" ? "◐" : "[◐]";
+---
+
 <button
-  class="terminal-button"
+  class={className}
   type="button"
   data-theme-toggle
-  aria-label="Toggle theme"
-  title="Toggle theme"
+  aria-label="切换主题"
+  title="切换主题"
 >
-  <span aria-hidden="true">◐</span>
-  <span>Theme</span>
+  <span aria-hidden="true">{label}</span>
+  <span class="sr-only">主题</span>
 </button>

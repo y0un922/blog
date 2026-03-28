@@ -1,24 +1,47 @@
 ---
 import BaseLayout from "./BaseLayout.astro";
-import TOC from "../components/TOC.astro";
-import TagBadge from "../components/TagBadge.astro";
-import { formatDate, getPostUrl, type PostEntry } from "../utils/posts";
+import {
+  formatDate,
+  getCategoryUrl,
+  getPostUrl,
+  getTagUrl,
+  type PostEntry,
+  withBase
+} from "../utils/posts";
 
 const {
   post,
-  headings,
   previous,
   next,
+  recentPosts = [],
   currentPath,
   structuredData
 } = Astro.props as {
   post: PostEntry;
-  headings: { slug: string; text: string; depth: number }[];
   previous: PostEntry | null;
   next: PostEntry | null;
+  recentPosts?: PostEntry[];
   currentPath: string;
   structuredData: Record<string, unknown> | null;
 };
+
+const publishedAt = formatDate(post.data.date);
+const words = (post.body ?? "").trim().split(/\s+/).filter(Boolean).length;
+const readMinutes = Math.max(3, Math.ceil(words / 220));
+const wordCount = new Intl.NumberFormat("en-US").format(words);
+const categoryHref = getCategoryUrl(post.data.category);
+const categoryChips = [
+  {
+    label: post.data.category,
+    href: categoryHref,
+    active: true
+  },
+  ...post.data.tags.slice(0, 4).map((tag) => ({
+    label: tag,
+    href: getTagUrl(tag),
+    active: false
+  }))
+];
 ---
 
 <BaseLayout
@@ -27,37 +50,84 @@ const {
   currentPath={currentPath}
   structuredData={structuredData}
 >
-  <div class="editorial-grid post-view">
-    <article class="space-y-6">
-      <header class="panel ghost-outline rounded-xl px-5 py-6 md:px-7 md:py-7">
-        <p class="section-eyebrow">01 // POST</p>
-        <h1 class="mt-4 text-4xl font-semibold tracking-[-0.05em] md:text-5xl">{post.data.title}</h1>
-        <div class="mt-5 flex flex-wrap items-center gap-3 text-sm text-[var(--fg-muted)]">
-          <span class="terminal-copy">{formatDate(post.data.date)}</span>
-          <span class="terminal-copy">{post.data.category}</span>
-          {post.data.tags.map((tag: string) => <TagBadge tag={tag} />)}
+  <div class="archive-screen archive-screen--detail">
+    <header class="post-detail-header panel ghost-outline">
+      <p class="post-detail-header__title">{`cat ./posts/${post.id}.md`}</p>
+      <p class="post-detail-header__subtitle">ARTICLE_VIEW // 阅读模式</p>
+    </header>
+
+    <div class="archive-body">
+      <article class="archive-left detail-left">
+        <div class="archive-toolbar panel ghost-outline">
+          <div class="post-detail-breadcrumbs">
+            <a href={withBase("/")}>[ 博客首页 ]</a>
+            <span>/</span>
+            <a href={categoryHref}>{`[ ${post.data.category} ]`}</a>
+            <span>/</span>
+            <span>[ 正文 ]</span>
+          </div>
         </div>
-        <p class="mt-5 max-w-3xl text-sm text-[var(--fg-muted)] md:text-base">{post.data.description}</p>
-      </header>
 
-      <section class="panel ghost-outline rounded-xl px-5 py-6 md:px-7 md:py-7">
-        <div class="article-prose">
-          <slot />
+        <div class="archive-chip-row">
+          <span class="archive-chip" data-active="true">{publishedAt}</span>
+          <span class="archive-chip">{`${readMinutes} 分钟阅读`}</span>
+          <span class="archive-chip">{`${wordCount} 字`}</span>
         </div>
-      </section>
 
-      <nav class="grid gap-4 md:grid-cols-2">
-        <a class="story-card" href={previous ? getPostUrl(previous) : "#"} aria-disabled={!previous}>
-          <p class="section-eyebrow">Prev</p>
-          <h2 class="mt-3 text-xl font-semibold tracking-[-0.03em]">{previous?.data.title ?? "No previous post"}</h2>
-        </a>
-        <a class="story-card" href={next ? getPostUrl(next) : "#"} aria-disabled={!next}>
-          <p class="section-eyebrow">Next</p>
-          <h2 class="mt-3 text-xl font-semibold tracking-[-0.03em]">{next?.data.title ?? "No newer post"}</h2>
-        </a>
-      </nav>
-    </article>
+        <section class="detail-article panel ghost-outline">
+          <h1 class="detail-article__title">{post.data.title}</h1>
+          <p class="detail-article__lead">{post.data.description}</p>
+          <div class="detail-article__separator" aria-hidden="true"></div>
 
-    <TOC headings={headings} />
+          <div class="article-prose">
+            <slot />
+          </div>
+
+          <nav class="detail-article__pager">
+            <a href={previous ? getPostUrl(previous) : "#"} aria-disabled={!previous}>
+              {previous ? `← 上一篇：${previous.data.title}` : "← 上一篇：暂无"}
+            </a>
+            <a href={next ? getPostUrl(next) : "#"} aria-disabled={!next}>
+              {next ? `下一篇：${next.data.title} →` : "下一篇：暂无 →"}
+            </a>
+          </nav>
+        </section>
+      </article>
+
+      <aside class="archive-right detail-right">
+        <section class="archive-side-card panel ghost-outline">
+          <p class="archive-side-card__title">&gt; 搜索</p>
+          <button class="archive-search-button" type="button" data-search-open>
+            <span>搜索文章...</span>
+          </button>
+        </section>
+
+        <section class="archive-side-card panel ghost-outline">
+          <p class="archive-side-card__title">&gt; 分类</p>
+          <div class="archive-side-chip-list">
+            {categoryChips.map((chip) => (
+              <a href={chip.href} class="archive-side-chip" data-active={chip.active}>
+                {chip.label}
+              </a>
+            ))}
+          </div>
+        </section>
+
+        <section class="archive-side-card panel ghost-outline">
+          <p class="archive-side-card__title">&gt; 最近文章</p>
+          <div class="archive-side-copy-list">
+            {recentPosts.map((entry, index) => (
+              <a href={getPostUrl(entry)}>{`[${index + 1}] ${entry.data.title}`}</a>
+            ))}
+          </div>
+        </section>
+
+        <section class="archive-side-card archive-side-card--accent panel ghost-outline">
+          <p class="archive-side-card__title">&gt; 订阅</p>
+          <p class="archive-side-card__body">每周一封邮件，推送终端技巧与新文章。</p>
+          <button class="archive-subscribe-button" type="button" data-search-open>订阅更新</button>
+        </section>
+      </aside>
+    </div>
   </div>
 </BaseLayout>

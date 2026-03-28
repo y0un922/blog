@@ -1,0 +1,49 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Navbar from "../components/Navbar.astro";
+import { withBase } from "../utils/posts";
+---
+
+<BaseLayout
+  title="Contact | y0un92"
+  description="Contact channels for collaboration, consulting, and technical writing."
+  currentPath={withBase("/contact/")}
+>
+  <div class="simple-page-screen">
+    <Navbar currentPath={withBase("/contact/")} variant="compact" />
+
+    <div class="simple-page-body">
+      <section class="contact-form-card panel ghost-outline">
+        <p class="simple-side-card__title">send_message.sh</p>
+        <div class="contact-field-row">
+          <span>来自</span>
+          <span>you@x.dev</span>
+        </div>
+        <div class="contact-field-row">
+          <span>主题</span>
+          <span>builds/website.dev</span>
+        </div>
+        <p class="contact-field-copy">消息: 一起做一套注重性能的产品工作流。</p>
+        <a class="contact-send-button" href="mailto:hello@y0un92.dev">↗ 发送</a>
+      </section>
+
+      <aside class="simple-page-side">
+        <section class="simple-side-card panel ghost-outline">
+          <p class="simple-side-card__title">联系渠道</p>
+          <div class="simple-side-card__copy-list">
+            <a href="https://github.com/y0un92" target="_blank" rel="noreferrer">GitHub → @y0un92</a>
+            <span>邮箱 → hello@y0un92.dev</span>
+            <a href={withBase("/rss.xml")}>RSS → /blog/rss.xml</a>
+          </div>
+        </section>
+
+        <section class="simple-side-card panel ghost-outline">
+          <p class="simple-side-card__title">响应时间</p>
+          <div class="simple-side-card__copy-list is-accent">
+            <span>: 通常 24 小时内回复</span>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </div>
+</BaseLayout>

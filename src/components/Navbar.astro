@@ -2,61 +2,138 @@
 import ThemeToggle from "./ThemeToggle.astro";
 import { withBase } from "../utils/posts";
 
-const { currentPath = "/" } = Astro.props;
+const { currentPath = "/", variant = "auto" } = Astro.props as {
+  currentPath?: string;
+  variant?: "auto" | "dashboard" | "compact" | "minimal";
+};
 const basePrefix = import.meta.env.BASE_URL.endsWith("/")
   ? import.meta.env.BASE_URL.slice(0, -1)
   : import.meta.env.BASE_URL;
 const normalizedPath = currentPath.startsWith(basePrefix)
   ? currentPath.slice(basePrefix.length) || "/"
   : currentPath;
+const isDashboard = normalizedPath === "/" || normalizedPath.startsWith("/page/");
+const isAbout = normalizedPath.startsWith("/about/");
+const isContact = normalizedPath.startsWith("/contact/");
+const resolvedVariant = variant !== "auto"
+  ? variant
+  : isDashboard
+    ? "dashboard"
+    : isAbout || isContact
+      ? "compact"
+      : "minimal";
+const headerTitle = isDashboard
+  ? "~/blog --nav"
+  : isAbout
+    ? "~/about --whoami"
+    : isContact
+      ? "~/contact --ping"
+      : "~/posts --all";
+const headerSubtitle = isDashboard
+  ? "极客终端日志 · 在线"
+  : isAbout
+    ? "全栈开发者 / 写作者"
+    : isContact
+      ? "send_message.sh"
+      : "技术日志、AI 笔记与交付手记。";
 const links = [
-  { href: withBase("/"), label: "HOME", active: normalizedPath === "/" || normalizedPath.startsWith("/page/") },
-  { href: withBase("/"), label: "POSTS", active: normalizedPath.startsWith("/posts/") },
-  { href: withBase("/about/"), label: "ABOUT", active: normalizedPath.startsWith("/about/") }
+  {
+    href: withBase("/"),
+    label: "首页",
+    active: normalizedPath === "/" || normalizedPath.startsWith("/page/"),
+    external: false
+  },
+  {
+    href: withBase("/"),
+    label: "文章",
+    active:
+      normalizedPath.startsWith("/posts/") ||
+      normalizedPath.startsWith("/categories/") ||
+      normalizedPath.startsWith("/tags/"),
+    external: false
+  },
+  { href: withBase("/about/"), label: "关于", active: normalizedPath.startsWith("/about/"), external: false },
+  { href: withBase("/contact/"), label: "联系我", active: normalizedPath.startsWith("/contact/"), external: false }
 ];
 ---
 
-<header class="fixed inset-x-0 top-0 z-40 border-b-0">
-  <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 md:px-8 lg:px-10">
-    <div class="panel ghost-outline flex w-full items-center justify-between gap-4 rounded-lg px-4 py-3">
-      <a href={withBase("/")} class="flex items-center gap-3">
-        <span class="terminal-copy text-[var(--color-cat-green)]">user@blog:~$</span>
-        <span class="font-mono text-sm tracking-[0.16em] text-[var(--fg-default)]">y0un92</span>
+{
+  resolvedVariant === "dashboard" ? (
+    <header class="page-header page-header--dashboard panel ghost-outline">
+      <a href={withBase("/")} class="page-header__brand">
+        <span class="page-header__title">{headerTitle}</span>
+        <span class="page-header__subtitle">{headerSubtitle}</span>
       </a>
 
-      <nav class="hidden items-center gap-2 lg:flex">
+      <nav class="page-header__pill-nav">
         {links.map((link) => (
-          <a class="nav-link" href={link.href} data-active={link.active}>
-            {link.label}
+          <a
+            class="page-header__pill-link"
+            href={link.href}
+            data-active={link.active}
+            target={link.external ? "_blank" : undefined}
+            rel={link.external ? "noreferrer" : undefined}
+          >
+            {link.active ? `[${link.label}]` : link.label}
           </a>
         ))}
       </nav>
 
-      <div class="flex items-center gap-2">
-        <button class="terminal-button hidden sm:inline-flex" type="button" data-search-open>
-          <span aria-hidden="true">⌕</span>
-          <span>Search</span>
+      <div class="page-header__tools">
+        <button class="tool-search" type="button" data-search-open aria-label="打开搜索">
+          <span aria-hidden="true">&gt;_</span>
+          <span>搜索文章...</span>
         </button>
-        <ThemeToggle />
-        <button class="terminal-button lg:hidden" type="button" data-menu-toggle aria-label="Toggle menu">
-          <span aria-hidden="true">≡</span>
-          <span>Menu</span>
+        <a class="tool-chip" href={withBase("/rss.xml")}>RSS</a>
+        <ThemeToggle variant="chip" />
+        <button class="tool-chip md:hidden" type="button" data-menu-toggle aria-label="切换菜单">
+          ≡
         </button>
       </div>
-    </div>
-  </div>
 
-  <div class="hidden px-4 md:px-8 lg:px-10" data-menu-panel>
-    <div class="panel ghost-outline mx-auto flex max-w-7xl flex-col gap-2 rounded-lg px-4 py-4 lg:hidden">
-      {links.map((link) => (
-        <a class="nav-link" href={link.href} data-active={link.active}>
-          {link.label}
-        </a>
-      ))}
-      <button class="terminal-button justify-center sm:hidden" type="button" data-search-open>
-        <span aria-hidden="true">⌕</span>
-        <span>Search</span>
-      </button>
-    </div>
-  </div>
-</header>
+      <div class="page-header__mobile-panel hidden md:hidden" data-menu-panel>
+        <div class="page-header__mobile-links">
+          {links.map((link) => (
+            <a
+              class="page-header__mobile-link"
+              href={link.href}
+              data-active={link.active}
+              target={link.external ? "_blank" : undefined}
+              rel={link.external ? "noreferrer" : undefined}
+            >
+              {link.label}
+            </a>
+          ))}
+        </div>
+      </div>
+    </header>
+  ) : resolvedVariant === "compact" ? (
+    <header class="page-header page-header--compact panel ghost-outline">
+      <a href={withBase("/")} class="page-header__brand">
+        <span class="page-header__title">{headerTitle}</span>
+        <span class="page-header__subtitle">{headerSubtitle}</span>
+      </a>
+
+      <nav class="page-header__compact-nav">
+        {links.map((link) => (
+          <a
+            class="page-header__compact-link"
+            href={link.href}
+            data-active={link.active}
+            target={link.external ? "_blank" : undefined}
+            rel={link.external ? "noreferrer" : undefined}
+          >
+            {link.label}
+          </a>
+        ))}
+      </nav>
+    </header>
+  ) : (
+    <header class="page-header page-header--minimal panel ghost-outline">
+      <div class="page-header__brand">
+        <span class="page-header__title">{headerTitle}</span>
+        <span class="page-header__subtitle">{headerSubtitle}</span>
+      </div>
+    </header>
+  )
+}
